@@ -1,7 +1,8 @@
 #include "window.h"
 
 EngineWindow::EngineWindow() = default;
-EngineWindow::EngineWindow(const std::string& title, const int width, const int height) :
+EngineWindow::EngineWindow(const std::string& title, const int width,
+						   const int height) :
 	width(width), height(height)
 {
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -24,7 +25,10 @@ auto EngineWindow::ShouldClose() const -> bool
 	return glfwWindowShouldClose(this->handle) != 0;
 }
 
-void EngineWindow::BeginContext() const { glfwMakeContextCurrent(this->handle); };
+void EngineWindow::BeginContext() const
+{
+	glfwMakeContextCurrent(this->handle);
+};
 
 auto EngineWindow::GetWidth() const -> int { return this->width; };
 auto EngineWindow::GetHeight() const -> int { return this->height; };
@@ -41,4 +45,3 @@ auto EngineWindow::operator=(EngineWindow&& other) noexcept -> EngineWindow&
 
 	return *this;
 }
-

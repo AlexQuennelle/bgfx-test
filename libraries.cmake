@@ -20,7 +20,7 @@ find_package(glfw ${GLFW_VERSION} QUIET)
 if (NOT glfw_FOUND)
 FetchContent_Declare(
         glfw
-        GIT_REPOSITORY git@github.com:glfw/glfw.git
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
         GIT_TAG ${GLFW_VERSION}
         GIT_SHALLOW ON
         GIT_PRORGRESS ON

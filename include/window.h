@@ -1,8 +1,12 @@
 #pragma once
 
 #include <glfw3.h>
+#ifdef __LINUX__
 #define GLFW_EXPOSE_NATIVE_WAYLAND
 #define GLFW_EXPOSE_NATIVE_X11
+#elifdef _WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#endif // __LINUX__
 #include <glfw3native.h>
 #include <string>
 
@@ -22,7 +26,13 @@ class EngineWindow
 
 	auto GetNativeHandle() const
 	{
+#ifdef _WIN32
+		return glfwGetWin32Window(this->handle);
+#elifdef __LINUX__
 		return glfwGetWaylandWindow(this->handle);
+#else
+		return nullptr;
+#endif
 		// return std::bit_cast<void*>(glfwGetX11Window(this->handle));
 	}
 	auto GetWidth() const -> int;

@@ -1,6 +1,7 @@
 #include "program.h"
 
 #include <bgfx/bgfx.h>
+#include <cstdint>
 #include <glfw3.h>
 #include <glfw3native.h>
 #include <print>
@@ -11,7 +12,10 @@ Program::Program()
 	{
 		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
 	}
-	// glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+	else if (glfwPlatformSupported(GLFW_PLATFORM_X11))
+	{
+		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+	}
 	glfwInit();
 	bgfx::init();
 	this->win = EngineWindow(NAME, 400, 400);
@@ -26,16 +30,17 @@ void Program::Run()
 	init.vendorId = BGFX_PCI_ID_NONE;
 	init.type = bgfx::RendererType::Vulkan;
 	init.resolution.reset = BGFX_RESET_VSYNC;
-	init.resolution.width
-		= static_cast<uint32_t>(this->win.GetHeight());
-	init.resolution.height
-		= static_cast<uint32_t>(this->win.GetWidth());
+	init.resolution.width = static_cast<uint32_t>(this->win.GetHeight());
+	init.resolution.height = static_cast<uint32_t>(this->win.GetWidth());
 
 	init.platformData.nwh = this->win.GetNativeHandle();
 	init.platformData.context = nullptr;
+#ifdef __LINUX__
 	init.platformData.ndt = glfwGetWaylandDisplay();
-	init.platformData.type
-		= bgfx::NativeWindowHandleType::Wayland;
+	init.platformData.type = bgfx::NativeWindowHandleType::Wayland;
+#else
+	init.platformData.type = bgfx::NativeWindowHandleType::Default;
+#endif // __LINUX__
 
 	bgfx::init(init);
 
@@ -55,7 +60,10 @@ void Program::Draw() const
 {
 	this->win.BeginContext();
 	glfwPollEvents();
-	bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x334455FF, 1.0f,
+	bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00ff00ff, 1.0f,
 					   0);
+	bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(this->win.GetWidth()),
+					  static_cast<uint16_t>(this->win.GetHeight()));
+	bgfx::touch(0);
 	bgfx::frame();
 }
