@@ -1,12 +1,12 @@
 #pragma once
 
 #include <glfw3.h>
-#ifdef __LINUX__
+#ifdef __linux__
 #define GLFW_EXPOSE_NATIVE_WAYLAND
 #define GLFW_EXPOSE_NATIVE_X11
 #elifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
-#endif // __LINUX__
+#endif // __linux__
 #include <glfw3native.h>
 #include <string>
 
@@ -28,7 +28,7 @@ class EngineWindow
 	{
 #ifdef _WIN32
 		return glfwGetWin32Window(this->handle);
-#elifdef __LINUX__
+#elifdef __linux__
 		return glfwGetWaylandWindow(this->handle);
 #else
 		return nullptr;

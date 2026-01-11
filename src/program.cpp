@@ -35,12 +35,12 @@ void Program::Run()
 
 	init.platformData.nwh = this->win.GetNativeHandle();
 	init.platformData.context = nullptr;
-#ifdef __LINUX__
+#ifdef __linux__
 	init.platformData.ndt = glfwGetWaylandDisplay();
 	init.platformData.type = bgfx::NativeWindowHandleType::Wayland;
 #else
 	init.platformData.type = bgfx::NativeWindowHandleType::Default;
-#endif // __LINUX__
+#endif // __linux__
 
 	bgfx::init(init);
 
