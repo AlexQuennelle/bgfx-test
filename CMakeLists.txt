@@ -41,6 +41,8 @@ if(NOT WIN32)
 endif()
 
 # Libraries here
+set(GLFW_BUILD_WAYLAND ON)
+set(GLFW_BUILD_X11 ON)
 include("${CMAKE_CURRENT_SOURCE_DIR}/libraries.cmake")
 
 set(CMAKE_CXX_FLAGS
