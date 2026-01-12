@@ -11,6 +11,10 @@ EngineWindow::EngineWindow(const std::string& title, const int width,
 	if (this->handle == nullptr)
 	{
 	}
+
+	glfwSetWindowUserPointer(this->handle, this);
+
+	glfwSetWindowSizeCallback(this->handle, ResizeCallback);
 }
 EngineWindow::~EngineWindow() { this->Close(); }
 
@@ -41,7 +45,17 @@ auto EngineWindow::operator=(EngineWindow&& other) noexcept -> EngineWindow&
 	this->width = other.width;
 	this->height = other.height;
 
+	glfwSetWindowUserPointer(this->handle, this);
+
 	other.handle = nullptr;
 
 	return *this;
+}
+
+void EngineWindow::ResizeCallback(GLFWwindow* handle, int x, int y)
+{
+	auto& wrapper
+		= *static_cast<EngineWindow*>(glfwGetWindowUserPointer(handle));
+	wrapper.width = x;
+	wrapper.height = y;
 }

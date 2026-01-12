@@ -1,11 +1,14 @@
 #pragma once
 
 #include <glfw3.h>
+#include <vector>
 #ifdef __linux__
 #define GLFW_EXPOSE_NATIVE_WAYLAND
 #define GLFW_EXPOSE_NATIVE_X11
 #elifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
+#elifdef __emscripten__
+// Web
 #endif // __linux__
 #include <glfw3native.h>
 #include <string>
@@ -41,8 +44,11 @@ class EngineWindow
 	auto operator=(const EngineWindow&) -> EngineWindow& = delete;
 	auto operator=(EngineWindow&& other) noexcept -> EngineWindow&;
 
+	static void ResizeCallback(GLFWwindow* handle, int x, int y);
+
 	private:
 	GLFWwindow* handle{nullptr};
 	int width{0};
 	int height{0};
+	static std::vector<EngineWindow*> allWindows;
 };

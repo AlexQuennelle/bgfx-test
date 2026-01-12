@@ -12,7 +12,7 @@ Program::Program()
 	{
 		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
 	}
-	else if (glfwPlatformSupported(GLFW_PLATFORM_X11))
+	else if (glfwPlatformSupported(GLFW_PLATFORM_X11) != 0)
 	{
 		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 	}
@@ -28,7 +28,11 @@ void Program::Run()
 
 	bgfx::Init init;
 	init.vendorId = BGFX_PCI_ID_NONE;
+#ifdef __emscripten__
+	init.type = bgfx::RendererType::OpenGL;
+#else
 	init.type = bgfx::RendererType::Vulkan;
+#endif // __emscripten__
 	init.resolution.reset = BGFX_RESET_VSYNC;
 	init.resolution.width = static_cast<uint32_t>(this->win.GetHeight());
 	init.resolution.height = static_cast<uint32_t>(this->win.GetWidth());
@@ -65,5 +69,6 @@ void Program::Draw() const
 	bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(this->win.GetWidth()),
 					  static_cast<uint16_t>(this->win.GetHeight()));
 	bgfx::touch(0);
+	std::println("test");
 	bgfx::frame();
 }
