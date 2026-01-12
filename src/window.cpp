@@ -1,5 +1,7 @@
 #include "window.h"
 
+#include <bgfx/bgfx.h>
+
 EngineWindow::EngineWindow() = default;
 EngineWindow::EngineWindow(const std::string& title, const int width,
 						   const int height) :
@@ -58,4 +60,9 @@ void EngineWindow::ResizeCallback(GLFWwindow* handle, int x, int y)
 		= *static_cast<EngineWindow*>(glfwGetWindowUserPointer(handle));
 	wrapper.width = x;
 	wrapper.height = y;
+	bgfx::reset(static_cast<uint32_t>(x), static_cast<uint32_t>(y),
+				BGFX_RESET_VSYNC);
+	bgfx::setViewRect(0, 0, 0, static_cast<uint32_t>(x),
+					  static_cast<uint32_t>(y));
+	bgfx::touch(0);
 }

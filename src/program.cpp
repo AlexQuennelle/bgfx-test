@@ -69,6 +69,5 @@ void Program::Draw() const
 	bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(this->win.GetWidth()),
 					  static_cast<uint16_t>(this->win.GetHeight()));
 	bgfx::touch(0);
-	std::println("test");
 	bgfx::frame();
 }
