@@ -8,6 +8,7 @@ EngineWindow::EngineWindow(const std::string& title, const int width,
 	width(width), height(height)
 {
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	glfwWindowHint(GLFW_RESIZABLE, 0);
 	this->handle // NOLINT
 		= glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
 	if (this->handle == nullptr)
@@ -62,7 +63,7 @@ void EngineWindow::ResizeCallback(GLFWwindow* handle, int x, int y)
 	wrapper.height = y;
 	bgfx::reset(static_cast<uint32_t>(x), static_cast<uint32_t>(y),
 				BGFX_RESET_VSYNC);
-	bgfx::setViewRect(0, 0, 0, static_cast<uint32_t>(x),
-					  static_cast<uint32_t>(y));
+	bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(x),
+					  static_cast<uint16_t>(y));
 	bgfx::touch(0);
 }
