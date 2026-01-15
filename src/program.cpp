@@ -12,6 +12,7 @@
 #include <print>
 
 #ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
 void RunWeb(void* arg)
 {
 	auto* program = static_cast<Program*>(arg);
@@ -60,6 +61,9 @@ Program::~Program() { glfwTerminate(); }
 
 void Program::Run()
 {
+#ifdef __EMSCRIPTEN__
+	RunWeb(static_cast<void*>(this));
+#else
 	this->win.BeginContext();
 
 	bgfx::Init init;
@@ -90,6 +94,7 @@ void Program::Run()
 		this->Draw();
 	}
 	this->win.Close();
+#endif // !__EMSCRIPTEN__
 }
 
 void Program::Update()
