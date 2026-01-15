@@ -22,14 +22,16 @@ if(NOT EMSCRIPTEN)
     target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE glfw)
 else()
     message("Using port")
-    add_link_options("--use-port=contrib.glfw3")
-    set(CMAKE_THREAD_LIBS_INIT "-lpthread")
-    set(CMAKE_HAVE_THREADS_LIBRARY 1)
-    set(CMAKE_USE_WIN32_THREADS_INIT 0)
-    set(CMAKE_USE_PTHREADS_INIT 1)
-    set(THREADS_PREFER_PTHREAD_FLAG ON)
-    # Also set compiler and linker flags for Emscripten
-    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE "-s USE_PTHREADS=1")
+    target_link_options(
+        ${CMAKE_PROJECT_NAME}
+        PRIVATE
+        "--use-port=contrib.glfw3"
+    )
+    target_compile_options(
+        ${CMAKE_PROJECT_NAME}
+        PRIVATE
+        "--use-port=contrib.glfw3"
+    )
 endif()
 message("Done!")
 

@@ -1,13 +1,48 @@
 #include "program.h"
 
+// #define __EMSCRIPTEN__
+// void emscripten_set_main_loop_arg(void(void*), void*, int, int);
+
+#include <GLFW/glfw3.h>
 #include <bgfx/bgfx.h>
 #include <cstdint>
-#include <glfw3.h>
-#include <glfw3native.h>
+#ifndef __EMSCRIPTEN__
+#include <GLFW/glfw3native.h>
+#endif // !__emscripten__
 #include <print>
+
+#ifdef __EMSCRIPTEN__
+void RunWeb(void* arg)
+{
+	auto* program = static_cast<Program*>(arg);
+
+	program->win.BeginContext();
+
+	bgfx::Init init;
+	init.vendorId = BGFX_PCI_ID_NONE;
+	init.type = bgfx::RendererType::OpenGL;
+	init.resolution.reset = BGFX_RESET_VSYNC;
+	init.resolution.width = static_cast<uint32_t>(program->win.GetHeight());
+	init.resolution.height = static_cast<uint32_t>(program->win.GetWidth());
+
+	init.platformData.nwh = program->win.GetNativeHandle();
+	init.platformData.context = nullptr;
+
+	bgfx::init(init);
+
+	emscripten_set_main_loop_arg(WebLoop, arg, 0, 1);
+}
+void WebLoop(void* arg)
+{
+	auto* program = static_cast<Program*>(arg);
+	program->Update();
+	program->Draw();
+}
+#endif // __EMSCRIPTEN__
 
 Program::Program()
 {
+#ifndef __EMSCRIPTEN__
 	if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND) != 0)
 	{
 		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
@@ -16,6 +51,7 @@ Program::Program()
 	{
 		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 	}
+#endif // !__emscripten__
 	glfwInit();
 	bgfx::init();
 	this->win = EngineWindow(NAME, 400, 400);

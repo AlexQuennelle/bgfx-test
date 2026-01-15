@@ -1,16 +1,18 @@
 #pragma once
 
-#include <glfw3.h>
+#include <GLFW/glfw3.h>
 #include <vector>
 #ifdef __linux__
 #define GLFW_EXPOSE_NATIVE_WAYLAND
 #define GLFW_EXPOSE_NATIVE_X11
 #elifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
-#elifdef __emscripten__
+#elifdef __EMSCRIPTEN__
 // Web
 #endif // __linux__
-#include <glfw3native.h>
+#ifndef __EMSCRIPTEN__
+#include <GLFW/glfw3native.h>
+#endif
 #include <string>
 
 class EngineWindow
@@ -33,6 +35,8 @@ class EngineWindow
 		return glfwGetWin32Window(this->handle);
 #elifdef __linux__
 		return glfwGetWaylandWindow(this->handle);
+#elifdef __EMSCRIPTEN__
+		return canvasID.c_str();
 #else
 		return nullptr;
 #endif
@@ -51,4 +55,7 @@ class EngineWindow
 	int width{0};
 	int height{0};
 	static std::vector<EngineWindow*> allWindows;
+#ifdef __EMSCRIPTEN__
+	const std::string canvasID{"canvas"};
+#endif // __EMSCRIPTEN__
 };

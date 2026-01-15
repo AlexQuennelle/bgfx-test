@@ -7,8 +7,8 @@ mkdir -p bin
 if [[ "${buildType^}" = "Web" ]]; then
 	mkdir -p build.web
 	cd build.web
-	emcmake.py cmake -G "Ninja Multi-Config" -DCMAKE_BUILD_TYPE=Release -DPLATFORM=Web ..
-	emmake.py ninja
+	emcmake.py cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DPLATFORM=Web ..
+	emmake.py make
 	cd ..
 	exit
 elif [ "${buildType^}" != "Debug" ] && [ "${buildType^}" != "Release" ]; then

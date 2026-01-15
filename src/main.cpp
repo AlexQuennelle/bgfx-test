@@ -1,6 +1,9 @@
 #include "program.h"
 
 #include <print>
+#ifdef __EMSCRIPTEN__
+#include<emscripten/emscripten.h>
+#endif // __EMSCRIPTEN__
 
 auto main() -> int
 {
