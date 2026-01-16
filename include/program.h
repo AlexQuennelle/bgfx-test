@@ -17,11 +17,11 @@ class Program
 	auto operator=(Program&&) -> Program& = delete;
 
 #ifdef __EMSCRIPTEN__
-	friend void RunWeb(void* arg);
 	friend void WebLoop(void* arg);
 #endif // __EMSCRIPTEN__
 
 	private:
+	void Init();
 	void Update();
 	void Draw() const;
 
@@ -29,6 +29,5 @@ class Program
 };
 
 #ifdef __EMSCRIPTEN__
-void RunWeb(void* arg);
 void WebLoop(void* arg);
 #endif // __EMSCRIPTEN__
