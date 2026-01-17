@@ -1,5 +1,7 @@
 #include "mesh.h"
 
+#include <bgfx/bgfx.h>
+
 Mesh::Mesh(const std::array<Vertex, 3>& data)
 {
 	static bgfx::VertexLayout layout;
@@ -11,8 +13,7 @@ Mesh::Mesh(const std::array<Vertex, 3>& data)
 	}
 	this->vertexBuffer = bgfx::createVertexBuffer(
 		bgfx::makeRef(data.data(), sizeof(data)), layout);
+	this->indexBuffer = bgfx::createIndexBuffer(
+		bgfx::makeRef(testIndices.data(), sizeof(testIndices)));
 }
-Mesh::~Mesh()
-{
-	bgfx::destroy(this->vertexBuffer);
-}
+Mesh::~Mesh() { bgfx::destroy(this->vertexBuffer); }

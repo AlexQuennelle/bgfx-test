@@ -6,18 +6,18 @@ if(NOT EMSCRIPTEN)
     find_package(glfw ${GLFW_VERSION} QUIET)
     if (NOT glfw_FOUND)
         FetchContent_Declare(
-        glfw
-        GIT_REPOSITORY https://github.com/glfw/glfw.git
-        GIT_TAG ${GLFW_VERSION}
-        GIT_SHALLOW ON
-        GIT_PRORGRESS ON
-    )
+            glfw
+            GIT_REPOSITORY https://github.com/glfw/glfw.git
+            GIT_TAG ${GLFW_VERSION}
+            GIT_SHALLOW ON
+            GIT_PRORGRESS ON
+        )
         FetchContent_MakeAvailable(glfw)
         FetchContent_GetProperties(glfw SOURCE_DIR GLFW_DIR)
-        target_include_directories(
-        ${CMAKE_PROJECT_NAME}
-        SYSTEM PRIVATE "${glfw_SOURCE_DIR}/include/GLFW/"
-    )
+        # target_include_directories(
+            # ${CMAKE_PROJECT_NAME}
+            # SYSTEM PRIVATE "${glfw_SOURCE_DIR}/include/GLFW/"
+        # )
     endif()
     target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE glfw)
 else()
@@ -46,4 +46,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(bgfx)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE bgfx)
+# target_include_directories(
+#     "${CMAKE_PROJECT_NAME}" PUBLIC
+#     "${CMAKE_BINARY_DIR}/_deps/bgfx-src/bgfx/"
+# )
+# target_include_directories(
+#     "${CMAKE_PROJECT_NAME}" PUBLIC
+#     "${CMAKE_BINARY_DIR}/_deps/bgfx-src/bx/include/"
+#     "${CMAKE_BINARY_DIR}/_deps/bgfx-src/bimg/include/"
+# )
 message("Done!")

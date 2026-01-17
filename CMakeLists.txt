@@ -3,7 +3,39 @@ cmake_minimum_required(VERSION 4.2.1)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_STANDARD 23)
 
-# set(CMAKE_POLICY_DEFAULT_CMP0069 NEW) set(CMAKE_POLICY_DEFAULT_CMP0072 NEW)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+message("Build type: ${CMAKE_BUILD_TYPE}")
+
+option(CONFIG_USE_WAYLAND "Whether to use Wayland on compatible systems" ON)
+option(CONFIG_USE_ASAN "Whether to enable address sanitizer" OFF)
+option(CONFIG_USE_UBSAN "Whether to enable undefined behavior sanitizer" OFF)
+
+set(VALID_BACKENDS VULKAN OPEN_GL OPEN_GL_ES DX11 DX12)
+set(BACKEND VULKAN CACHE STRING "Graphics API to use")
+if(EMSCRIPTEN)
+    message("Emscripten")
+    list(REMOVE_ITEM VALID_BACKENDS VULKAN)
+    list(REMOVE_ITEM VALID_BACKENDS OPEN_GL_ES)
+    list(REMOVE_ITEM VALID_BACKENDS DX11)
+    list(REMOVE_ITEM VALID_BACKENDS DX12)
+    set(BACKEND OPEN_GL CACHE STRING "Graphics API" FORCE)
+elseif(LINUX)
+    list(REMOVE_ITEM VALID_BACKENDS DX11)
+    list(REMOVE_ITEM VALID_BACKENDS DX12)
+elseif(WIN32)
+    message("Test")
+endif()
+set_property(CACHE BACKEND PROPERTY STRINGS ${VALID_BACKENDS})
+
+if(NOT BACKEND IN_LIST VALID_BACKENDS)
+    message(FATAL_ERROR "ERROR: BACKEND must be of of ${VALID_BACKENDS}")
+endif()
+
+message("Backend: ${BACKEND}")
+
+if(NOT LINUX)
+    set(CONFIG_USE_WAYLAND OFF)
+endif()
 
 if(NOT EMSCRIPTEN)
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
@@ -11,22 +43,10 @@ else()
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
 endif()
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-if("${CMAKE_GENERATOR}" STREQUAL "Ninja")
-
-else()
-
-endif()
-
-if(WIN32)
-  set(CMAKE_CXX_COMPILER clang++)
-  set(CMAKE_C_COMPILER clang)
-endif()
-
-if(NOT WIN32)
-  # add_compile_options("-fsanitize=undefined")
-  # add_compile_options("-fsanitize=address")
+if(LINUX AND CONFIG_USE_UBSAN)
+    add_compile_options("-fsanitize=undefined")
+elseif(LINUX AND CONFIG_USE_ASAN)
+    add_compile_options("-fsanitize=address")
 endif()
 
 # Change this to match the name of the current folder
@@ -35,13 +55,13 @@ project(
   LANGUAGES CXX C
   VERSION 0.0
 )
-message("Build type: ${CMAKE_BUILD_TYPE}")
 
 add_executable("${CMAKE_PROJECT_NAME}")
 
-if(NOT WIN32)
-  # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined")
-  # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+if(LINUX AND CONFIG_USE_UBSAN)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined")
+elseif(LINUX AND CONFIG_USE_ASAN)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
 endif()
 
 # Libraries here
@@ -50,7 +70,29 @@ if(EMSCRIPTEN)
     set(GLFW_BUILD_X11 OFF)
     set(BGFX_CONFIG_MULTITHREADED OFF)
 endif()
-include("${CMAKE_CURRENT_SOURCE_DIR}/libraries.cmake")
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake")
+
+set(SHADERS_SOURCE ${CMAKE_SOURCE_DIR}/resources/shaders)
+set(SHADERS_BIN ${CMAKE_BINARY_DIR}/shaders)
+if(LINUX)
+endif()
+
+if(NOT EMSCRIPTEN)
+message("Compiling Shaders")
+bgfx_compile_shaders(
+    TYPE FRAGMENT
+    SHADERS "${SHADERS_SOURCE}/cubes.frag"
+    VARYING_DEF "${SHADERS_SOURCE}/varying.def.sc"
+    OUTPUT_DIR "${SHADERS_BIN}"
+)
+bgfx_compile_shaders(
+    TYPE VERTEX
+    SHADERS "${SHADERS_SOURCE}/cubes.vert"
+    VARYING_DEF "${SHADERS_SOURCE}/varying.def.sc"
+    OUTPUT_DIR "${SHADERS_BIN}"
+)
+message("Done!")
+endif()
 
 set(CMAKE_CXX_FLAGS
     "-Wall -Wextra -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wunused\
@@ -58,19 +100,25 @@ set(CMAKE_CXX_FLAGS
     -Wnull-dereference -Wdouble-promotion -Wformat=2 -Wduplicated-cond\
     -Wduplicated-branches -Wlogical-op -Wuseless-cast"
 )
-file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS
+file(GLOB_RECURSE
+    MY_SOURCES CONFIGURE_DEPENDS
      "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
+file(GLOB_RECURSE SHADERS
+    CONFIGURE_DEPENDS
+    "${SHADERS_SOURCE}/*.frag"
+    "${SHADERS_SOURCE}/*.vert"
 )
 
 if(EMSCRIPTEN)
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}\
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}\
  --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/src/template.html"
   )
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}\
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}\
  --js-library ${CMAKE_CURRENT_SOURCE_DIR}/src/lib.js"
   )
-  set(CMAKE_EXECUTABLE_SUFFIX ".html")
-  set_target_properties(
+    set(CMAKE_EXECUTABLE_SUFFIX ".html")
+    set_target_properties(
     ${CMAKE_PROJECT_NAME}
     PROPERTIES LINK_FLAGS
                "--preload-file ../resources@./resources -sALLOW_MEMORY_GROWTH"
@@ -88,7 +136,7 @@ set_target_properties(
 ${CMAKE_PROJECT_NAME}_${CMAKE_PROJECT_VERSION}"
 )
 if(EMSCRIPTEN)
-  set_target_properties(
+    set_target_properties(
     ${CMAKE_PROJECT_NAME}
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE
                "${CMAKE_CURRENT_SOURCE_DIR}/bin/\
@@ -108,7 +156,14 @@ target_compile_definitions(
 
 target_compile_features("${CMAKE_PROJECT_NAME}" PRIVATE cxx_std_23)
 
+# target_include_directories(
+#     "${CMAKE_PROJECT_NAME}" PRIVATE
+#     ${CMAKE_BINARY_DIR}/shaders
+# )
 target_sources("${CMAKE_PROJECT_NAME}" PRIVATE ${MY_SOURCES})
+if(NOT EMSCRIPTEN)
+    target_sources("${CMAKE_PROJECT_NAME}" PRIVATE ${SHADERS})
+endif()
 
 target_include_directories(
   "${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/"
@@ -116,19 +171,16 @@ target_include_directories(
 target_include_directories(
   "${CMAKE_PROJECT_NAME}" PUBLIC "${PROJECT_BINARY_DIR}"
 )
-target_include_directories(
-  "${CMAKE_PROJECT_NAME}"
-  PUBLIC
-    "${CMAKE_CURRENT_SOURCE_DIR}/nativefiledialog-extended-1.2.1/src/include/"
-)
 
 if(NOT EMSCRIPTEN)
-  add_custom_command(
+    add_custom_command(
     TARGET ${CMAKE_PROJECT_NAME}
     POST_BUILD
-    COMMAND
-      ${CMAKE_COMMAND} -E copy_directory
-      "${CMAKE_CURRENT_SOURCE_DIR}/resources"
-      $<IF:$<CONFIG:Release>,"${RELEASE_RESOURCE_DIR}","${DEBUG_RESOURCE_DIR}">
+    COMMAND ${CMAKE_COMMAND} # -E copy_directory
+-DDEST_DIR=$<IF:$<CONFIG:Release>,"${RELEASE_RESOURCE_DIR}","${DEBUG_RESOURCE_DIR}">
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/copyResources.cmake
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      # "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+      # $<IF:$<CONFIG:Release>,"${RELEASE_RESOURCE_DIR}","${DEBUG_RESOURCE_DIR}">
   )
 endif()
