@@ -1,7 +1,9 @@
 #pragma once
 
+#include "mesh.h"
 #include "window.h"
-// #define __EMSCRIPTEN__
+
+static constexpr std::string Backend = BACKEND;
 
 class Program
 {
@@ -26,6 +28,7 @@ class Program
 	void Draw() const;
 
 	EngineWindow win;
+	Mesh test;
 };
 
 #ifdef __EMSCRIPTEN__

@@ -53,7 +53,12 @@ void Program::Init()
 #ifdef __EMSCRIPTEN__
 	init.type = bgfx::RendererType::OpenGL;
 #else
-	init.type = bgfx::RendererType::Vulkan;
+	if (Backend == "VULKAN")
+		init.type = bgfx::RendererType::Vulkan;
+	else if (Backend == "OPEN_GL")
+		init.type = bgfx::RendererType::OpenGL;
+	else
+		init.type = bgfx::RendererType::Noop;
 #endif // __EMSCRIPTEN__
 	init.resolution.reset = BGFX_RESET_VSYNC;
 	init.resolution.width = static_cast<uint32_t>(this->win.GetHeight());
@@ -68,18 +73,19 @@ void Program::Init()
 	init.platformData.type = bgfx::NativeWindowHandleType::Default;
 #endif // __linux__
 	bgfx::init(init);
-	Mesh test(testTri);
+	test = Mesh(testTri);
 }
 void Program::Update() { }
 void Program::Draw() const
 {
 	this->win.BeginContext();
 	glfwPollEvents();
-	bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00ff00ff, 1.0f,
+	bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00FF00FF, 1.0f,
 					   0);
 	bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(this->win.GetWidth()),
 					  static_cast<uint16_t>(this->win.GetHeight()));
-	bgfx::touch(0);
+	// bgfx::touch(0);
+	test.Draw();
 	bgfx::frame();
 }
 

@@ -12,7 +12,8 @@ option(CONFIG_USE_UBSAN "Whether to enable undefined behavior sanitizer" OFF)
 
 set(VALID_BACKENDS VULKAN OPEN_GL OPEN_GL_ES DX11 DX12)
 set(BACKEND VULKAN CACHE STRING "Graphics API to use")
-if(EMSCRIPTEN)
+if(EMSCRIPTEN OR PLATFORM STREQUAL "Web")
+    set(EMSCRIPTEN 1)
     message("Emscripten")
     list(REMOVE_ITEM VALID_BACKENDS VULKAN)
     list(REMOVE_ITEM VALID_BACKENDS OPEN_GL_ES)
@@ -78,21 +79,31 @@ if(LINUX)
 endif()
 
 if(NOT EMSCRIPTEN)
-message("Compiling Shaders")
-bgfx_compile_shaders(
-    TYPE FRAGMENT
-    SHADERS "${SHADERS_SOURCE}/cubes.frag"
-    VARYING_DEF "${SHADERS_SOURCE}/varying.def.sc"
-    OUTPUT_DIR "${SHADERS_BIN}"
-)
-bgfx_compile_shaders(
-    TYPE VERTEX
-    SHADERS "${SHADERS_SOURCE}/cubes.vert"
-    VARYING_DEF "${SHADERS_SOURCE}/varying.def.sc"
-    OUTPUT_DIR "${SHADERS_BIN}"
-)
-message("Done!")
+    message("Compiling Shaders")
+    bgfx_compile_shaders(
+        TYPE FRAGMENT
+        SHADERS "${SHADERS_SOURCE}/cubes.frag"
+        VARYING_DEF "${SHADERS_SOURCE}/varying.def.sc"
+        OUTPUT_DIR "${SHADERS_BIN}"
+    )
+    bgfx_compile_shaders(
+        TYPE VERTEX
+        SHADERS "${SHADERS_SOURCE}/cubes.vert"
+        VARYING_DEF "${SHADERS_SOURCE}/varying.def.sc"
+        OUTPUT_DIR "${SHADERS_BIN}"
+    )
+    message("Done!")
 endif()
+if(BACKEND STREQUAL "VULKAN")
+    set(SHADER_TYPE spirv)
+elseif(BACKEND STREQUAL "OPEN_GL")
+    set(SHADER_TYPE glsl)
+elseif(BACKEND STREQUAL "OPEN_GL_ES")
+    set(SHADER_TYPE essl)
+else()
+    message(FATAL_ERROR "Shader type not handled")
+endif()
+message("Shader type: ${SHADER_TYPE}")
 
 set(CMAKE_CXX_FLAGS
     "-Wall -Wextra -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wunused\
@@ -121,13 +132,15 @@ if(EMSCRIPTEN)
     set_target_properties(
     ${CMAKE_PROJECT_NAME}
     PROPERTIES LINK_FLAGS
-               "--preload-file ../resources@./resources -sALLOW_MEMORY_GROWTH"
+    "--preload-file ${CMAKE_SOURCE_DIR}/build/shaders/${SHADER_TYPE}@./resources/shaders/${SHADER_TYPE} --preload-file ../resources@./resources\
+ --exclude-file ../resources/shaders/ -sALLOW_MEMORY_GROWTH"
   )
 endif()
 target_compile_definitions(
   ${CMAKE_PROJECT_NAME} PUBLIC $<$<CONFIG:Release>:PRODUCTION_BUILD>
                                NAME="${CMAKE_PROJECT_NAME}"
 )
+target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC BACKEND="${BACKEND}")
 
 set_target_properties(
   "${CMAKE_PROJECT_NAME}"
@@ -152,6 +165,11 @@ target_compile_definitions(
   ${CMAKE_PROJECT_NAME}
   PUBLIC
     RESOURCES_PATH=$<IF:$<CONFIG:Release>,"./resources/","${DEBUG_RESOURCE_DIR}">
+)
+target_compile_definitions(
+    ${CMAKE_PROJECT_NAME}
+    PUBLIC
+    SHADERS=$<IF:$<CONFIG:Release>,"./resources/shaders/${SHADER_TYPE}","${SHADERS_BIN}/${SHADER_TYPE}/">
 )
 
 target_compile_features("${CMAKE_PROJECT_NAME}" PRIVATE cxx_std_23)

@@ -15,31 +15,35 @@ struct Vertex
 class Mesh
 {
 	public:
-	Mesh() = delete;
+	Mesh() = default;
 	Mesh(const std::array<Vertex, 3>& data);
 	Mesh(const Mesh&) = delete;
-	Mesh(Mesh&&) = delete;
+	Mesh(Mesh&& other) noexcept;
 	~Mesh();
 
-	auto operator=(const Mesh&) -> Mesh& = default;
-	auto operator=(Mesh&&) -> Mesh& = default;
+	void Draw() const;
+
+	auto operator=(const Mesh&) -> Mesh& = delete;
+	auto operator=(Mesh&& other) noexcept -> Mesh&;
 
 	private:
-	bgfx::VertexBufferHandle vertexBuffer{0};
-	bgfx::IndexBufferHandle indexBuffer{0};
-	bgfx::ProgramHandle shader{0};
+	void Destroy();
+
+	bgfx::VertexBufferHandle vertexBuffer = BGFX_INVALID_HANDLE;
+	bgfx::IndexBufferHandle indexBuffer = BGFX_INVALID_HANDLE;
+	bgfx::ProgramHandle shader = BGFX_INVALID_HANDLE;
 
 	public:
 };
 
 static const std::array<Vertex, 3> testTri = {{
 	{.pos = {.x = -0.5f, .y = -0.5f, .z = 0.0f},
-	 .col = {.r = 255, .g = 0, .b = 0, .a = 255}},
+	 .col = {255, 0, 0, 255}},
 
 	{.pos = {.x = 0.0f, .y = 0.5f, .z = 0.0f},
-	 .col = {.r = 0, .g = 255, .b = 0, .a = 255}},
+	 .col = {0, 255, 0, 255}},
 
 	{.pos = {.x = 0.5f, .y = -0.5f, .z = 0.0f},
-	 .col = {.r = 0, .g = 0, .b = 255, .a = 255}},
+	 .col = {0, 0, 255, 255}},
 }};
 static const std::array<int, 3> testIndices({0, 1, 2});
