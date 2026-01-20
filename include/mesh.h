@@ -8,8 +8,20 @@
 
 struct Vertex
 {
-	Vector3 pos{};
-	Color col{};
+	float x;
+	float y;
+	float z;
+	uint32_t col; // AGBR
+	// Vector3 pos{};
+	// Color col{};
+	static void Init()
+	{
+		layout.begin()
+			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+			.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+			.end();
+	}
+	static bgfx::VertexLayout layout;
 };
 
 class Mesh
@@ -37,13 +49,13 @@ class Mesh
 };
 
 static const std::array<Vertex, 3> testTri = {{
-	{.pos = {.x = -0.5f, .y = -0.5f, .z = 0.0f},
-	 .col = {255, 0, 0, 255}},
+	// {.pos = {.x = -0.5f, .y = -0.5f, .z = 0.0f},
+	//  .col = {255, 0, 0, 255}},
 
-	{.pos = {.x = 0.0f, .y = 0.5f, .z = 0.0f},
-	 .col = {0, 255, 0, 255}},
+	// {.pos = {.x = 0.0f, .y = 0.5f, .z = 0.0f},
+	//  .col = {0, 255, 0, 255}},
 
-	{.pos = {.x = 0.5f, .y = -0.5f, .z = 0.0f},
-	 .col = {0, 0, 255, 255}},
+	// {.pos = {.x = 0.5f, .y = -0.5f, .z = 0.0f},
+	//  .col = {0, 0, 255, 255}},
 }};
 static const std::array<int, 3> testIndices({0, 1, 2});

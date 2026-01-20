@@ -3,17 +3,19 @@
 
 #include <bgfx/bgfx.h>
 
+bgfx::VertexLayout Vertex::layout;
+
 Mesh::Mesh(const std::array<Vertex, 3>& data)
 {
-	static bgfx::VertexLayout layout;
-	{
-		layout.begin()
-			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-			.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
-			.end();
-	}
+	// static bgfx::VertexLayout layout;
+	// {
+	// 	layout.begin()
+	// 		.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+	// 		.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+	// 		.end();
+	// }
 	this->vertexBuffer = bgfx::createVertexBuffer(
-		bgfx::makeRef(data.data(), sizeof(data)), layout);
+		bgfx::makeRef(data.data(), sizeof(data)), Vertex::layout);
 	this->indexBuffer = bgfx::createIndexBuffer(
 		bgfx::makeRef(testIndices.data(), sizeof(testIndices)));
 	this->shader = CreateShaderProgram(SHADERS "cubes.vert.bin",

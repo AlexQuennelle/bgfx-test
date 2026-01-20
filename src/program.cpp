@@ -73,6 +73,7 @@ void Program::Init()
 	init.platformData.type = bgfx::NativeWindowHandleType::Default;
 #endif // __linux__
 	bgfx::init(init);
+	Vertex::Init();
 	test = Mesh(testTri);
 }
 void Program::Update() { }
