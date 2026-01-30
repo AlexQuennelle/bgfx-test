@@ -26,7 +26,11 @@ Program::Program()
 	bgfx::init();
 	this->win = EngineWindow(NAME, 400, 400);
 }
-Program::~Program() { glfwTerminate(); }
+Program::~Program()
+{
+	bgfx::shutdown();
+	glfwTerminate();
+}
 
 void Program::Run()
 {
