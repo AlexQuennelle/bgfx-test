@@ -4,12 +4,12 @@
 
 struct Color
 {
-	uint8_t a{255};
-	uint8_t b{255};
-	uint8_t g{255};
 	uint8_t r{255};
+	uint8_t g{255};
+	uint8_t b{255};
+	uint8_t a{255};
 
-	auto RGBA() -> uint32_t
+	auto ABGR() -> uint32_t
 	{
 		return 0u
 			   | (static_cast<uint32_t>(this->r) << 24)
@@ -17,7 +17,7 @@ struct Color
 			   | (static_cast<uint32_t>(this->b) << 8)
 			   | (static_cast<uint32_t>(this->a) << 0);
 	}
-	auto ABGR() -> uint32_t
+	auto RGBA() -> uint32_t
 	{
 		return 0u
 			   | (static_cast<uint32_t>(this->a) << 0)

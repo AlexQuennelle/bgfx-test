@@ -5,7 +5,7 @@
 
 bgfx::VertexLayout Vertex::layout;
 
-Mesh::Mesh(const std::array<Vertex, 3>& data)
+Mesh::Mesh(const std::array<Vertex, 8>& data)
 {
 	// static bgfx::VertexLayout layout;
 	// {
