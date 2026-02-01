@@ -1,4 +1,5 @@
 #include "program.h"
+#include "matrix.h"
 #include "mesh.h"
 #include "shader.h"
 
@@ -30,7 +31,6 @@ Program::Program()
 }
 Program::~Program()
 {
-	bgfx::shutdown();
 	glfwTerminate();
 }
 
@@ -105,6 +105,8 @@ void Program::Draw() const
 	const bx::Vec3 at = {0.0f, 0.0f, 0.0f};
 	const bx::Vec3 eye = {0.0f, 0.0f, -35.0f};
 	{
+		Mat4 viewMat{Mat4::Identity()};
+		viewMat[0,0];
 		float view[16];
 		bx::mtxLookAt(view, eye, at);
 
@@ -126,15 +128,6 @@ void Program::Draw() const
 					  static_cast<uint16_t>(this->win.GetHeight()));
 	bgfx::touch(0);
 
-	uint64_t state = 0
-					 | BGFX_STATE_WRITE_R
-					 | BGFX_STATE_WRITE_G
-					 | BGFX_STATE_WRITE_B
-					 | BGFX_STATE_WRITE_A
-					 | BGFX_STATE_WRITE_Z
-					 | BGFX_STATE_DEPTH_TEST_LESS
-					 | BGFX_STATE_CULL_CW
-					 | BGFX_STATE_MSAA;
 	for (uint32_t yy = 0; yy < 11; ++yy)
 	{
 		for (uint32_t xx = 0; xx < 11; ++xx)
