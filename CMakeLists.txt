@@ -26,7 +26,7 @@ elseif(LINUX)
 elseif(WIN32)
     message("Test")
     add_compile_definitions(NOMINMAX)
-    set(BACKEND OPEN_GL CACHE STRING "Graphics API" FORCE)
+    # set(BACKEND OPEN_GL CACHE STRING "Graphics API" FORCE)
 endif()
 set_property(CACHE BACKEND PROPERTY STRINGS ${VALID_BACKENDS})
 

@@ -8,11 +8,7 @@
 
 struct Vertex
 {
-	// float x;
-	// float y;
-	// float z;
 	Vector3 pos{};
-	// uint32_t col; // AGBR
 	Color col{};
 	static void Init()
 	{
