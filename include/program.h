@@ -3,25 +3,17 @@
 #include "mesh.h"
 #include "window.h"
 
-static constexpr std::string Backend = BACKEND;
+static const std::string Backend{BACKEND};
 
 static Vertex s_cubeVertices[] = {
-	{.pos = {-1.0f, 1.0f, 1.0f},
-	 .col = { 0x00, 0x00, 0x00, 0xff }},
-	{.pos = {1.0f, 1.0f, 1.0f},
-	 .col = { 0xff, 0x00, 0x00, 0xff }},
-	{.pos = {-1.0f, -1.0f, 1.0f},
-	 .col = { 0x00, 0xff, 0x00, 0xff }},
-	{.pos = {1.0f, -1.0f, 1.0f},
-	 .col = { 0xff, 0xff, 0x00, 0xff }},
-	{.pos = {-1.0f, 1.0f, -1.0f},
-	 .col = { 0x00, 0x00, 0xff, 0xff }},
-	{.pos = {1.0f, 1.0f, -1.0f},
-	 .col = { 0xff, 0x00, 0xff, 0xff }},
-	{.pos = {-1.0f, -1.0f, -1.0f},
-	 .col = { 0x00, 0xff, 0xff, 0xff }},
-	{.pos = {1.0f, -1.0f, -1.0f},
-	 .col = { 0xff, 0xff, 0xff, 0xff }},
+	{.pos = {-1.0f, 1.0f, 1.0f}, .col = {0x00, 0x00, 0x00, 0xff}},
+	{.pos = {1.0f, 1.0f, 1.0f}, .col = {0xff, 0x00, 0x00, 0xff}},
+	{.pos = {-1.0f, -1.0f, 1.0f}, .col = {0x00, 0xff, 0x00, 0xff}},
+	{.pos = {1.0f, -1.0f, 1.0f}, .col = {0xff, 0xff, 0x00, 0xff}},
+	{.pos = {-1.0f, 1.0f, -1.0f}, .col = {0x00, 0x00, 0xff, 0xff}},
+	{.pos = {1.0f, 1.0f, -1.0f}, .col = {0xff, 0x00, 0xff, 0xff}},
+	{.pos = {-1.0f, -1.0f, -1.0f}, .col = {0x00, 0xff, 0xff, 0xff}},
+	{.pos = {1.0f, -1.0f, -1.0f}, .col = {0xff, 0xff, 0xff, 0xff}},
 };
 
 static const uint16_t s_cubeTriList[] = {

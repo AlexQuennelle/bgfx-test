@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 4.2.1)
 
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+# set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_STANDARD 23)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -25,6 +25,8 @@ elseif(LINUX)
     list(REMOVE_ITEM VALID_BACKENDS DX12)
 elseif(WIN32)
     message("Test")
+    add_compile_definitions(NOMINMAX)
+    set(BACKEND OPEN_GL CACHE STRING "Graphics API" FORCE)
 endif()
 set_property(CACHE BACKEND PROPERTY STRINGS ${VALID_BACKENDS})
 
@@ -105,12 +107,14 @@ else()
 endif()
 message("Shader type: ${SHADER_TYPE}")
 
-set(CMAKE_CXX_FLAGS
-    "-Wall -Wextra -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wunused\
-    -Woverloaded-virtual -Wpedantic -Wconversion -Wsign-conversion\
-    -Wnull-dereference -Wdouble-promotion -Wformat=2 -Wduplicated-cond\
-    -Wduplicated-branches -Wlogical-op -Wuseless-cast"
+if(LINUX)
+    set(CMAKE_CXX_FLAGS
+        "-Wall -Wextra -Wnon-virtual-dtor -Wold-style-cast -Wcast-align\
+        -Wunused -Woverloaded-virtual -Wpedantic -Wconversion -Wsign-conversion\
+        -Wnull-dereference -Wdouble-promotion -Wformat=2 -Wduplicated-cond\
+        -Wduplicated-branches -Wlogical-op -Wuseless-cast"
 )
+endif()
 file(GLOB_RECURSE
     MY_SOURCES CONFIGURE_DEPENDS
      "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
