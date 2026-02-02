@@ -1,7 +1,6 @@
 #include "program.h"
 #include "matrix.h"
 #include "mesh.h"
-#include "shader.h"
 
 #include <GLFW/glfw3.h>
 #include <bgfx/bgfx.h>
@@ -105,7 +104,7 @@ void Program::Draw() const
 	const bx::Vec3 at = {0.0f, 0.0f, 0.0f};
 	const bx::Vec3 eye = {0.0f, 0.0f, -35.0f};
 	{
-		Mat4 viewMat{Mat4::Identity()};
+		Matrix viewMat{Mat4::Identity()};
 		viewMat[0,0];
 		float view[16];
 		bx::mtxLookAt(view, eye, at);

@@ -1,14 +1,16 @@
 #pragma once
 
 #include "vector3.h"
+
 #include <array>
 #include <cassert>
 #include <cstdint>
 
-template <uint64_t W = 4, uint64_t H = 4> class Matrix
+template <uint64_t W, uint64_t H = W> class Matrix
 {
 	public:
 	Matrix() = default;
+	~Matrix() = default;
 
 	Matrix(const Matrix&) = default;
 	Matrix(Matrix&&) = default;
@@ -116,6 +118,7 @@ template <uint64_t N> class Matrix<N, N>
 };
 template <> class Matrix<1, 3>
 {
+	public:
 	Matrix() = default;
 	~Matrix() = default;
 
@@ -165,5 +168,5 @@ template <> class Matrix<1, 3>
 	std::array<float, 3> data;
 };
 
-using Matrix4 = Matrix<>;
-using Mat4 = Matrix<>;
+using Matrix4 = Matrix<4>;
+using Mat4 = Matrix<4>;
