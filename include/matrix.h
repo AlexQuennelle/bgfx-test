@@ -1,10 +1,12 @@
 #pragma once
 
-#include "vector3.h"
+#include "vectorN.h"
 
 #include <array>
 #include <cassert>
 #include <cstdint>
+#include <format>
+#include <iostream>
 
 template <uint64_t W, uint64_t H = W> class Matrix
 {
@@ -28,6 +30,90 @@ template <uint64_t W, uint64_t H = W> class Matrix
 	}
 
 	auto Data() const -> const float* { return this->data.data(); }
+	constexpr auto GetWidth() const -> uint64_t { return W; }
+	constexpr auto GetHeight() const -> uint64_t { return H; }
+
+	void Print() const
+	{
+		std::array<std::string, H> lines;
+
+		for (uint64_t y{0}; y < H; y++)
+		{
+			if (y == 0)
+				lines[y].append(" 🭽");
+			else if (y == H - 1)
+				lines[y].append(" 🭼");
+			else
+				lines[y].append(" ▏");
+
+			for (uint64_t x{0}; x < W; x++)
+			{
+				lines[y].append(std::format("{:.1f} ", (*this)[x, y]));
+				if (x == W - 1)
+				{
+					lines[y].erase(lines[y].length() - 1);
+					if (y == 0)
+						lines[y].append("🭾");
+					else if (y == H - 1)
+						lines[y].append("🭿");
+					else
+						lines[y].append("▕");
+				}
+			}
+			lines[y].append("\n");
+		}
+
+		std::string str{};
+		for (auto line : lines)
+		{
+			str.append(line);
+		}
+
+		std::cout << str;
+	}
+
+	auto operator+(const Matrix<W, H>& other) -> Matrix<W, H>
+	{
+		Matrix<W, H> mat{};
+		for (int x{0}; x < W; x++)
+		{
+			for (int y{0}; y < H; y++)
+			{
+				mat[x, y] = (*this)[x, y] + other[x, y];
+			}
+		}
+		return mat;
+	}
+	auto operator-(const Matrix<W, H>& other) -> Matrix<W, H>
+	{
+		Matrix<W, H> mat{};
+		for (int x{0}; x < W; x++)
+		{
+			for (int y{0}; y < H; y++)
+			{
+				mat[x, y] = (*this)[x, y] - other[x, y];
+			}
+		}
+		return mat;
+	}
+	template <uint64_t W2>
+	auto operator*(const Matrix<W2, W>& other) -> Matrix<W2, H>
+	{
+		// auto transpose{other.Transpose()};
+		Matrix mat{};
+		for (uint64_t y{0}; y < H; y++)
+		{
+			for (uint64_t x{0}; x < W2; x++)
+			{
+				mat[x, y] = 0;
+				for (int i{0}; i < W; i++)
+				{
+					mat[x, y] += *(this)[i, y] * other[x, i];
+				}
+			}
+		}
+		return mat;
+	}
 
 	auto operator=(const Matrix&) -> Matrix& = default;
 	auto operator=(Matrix&&) -> Matrix& = default;

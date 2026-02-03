@@ -1,7 +1,7 @@
 #pragma once
 
 #include "color.h"
-#include "vector3.h"
+#include "vectorN.h"
 
 #include <array>
 #include <bgfx/bgfx.h>

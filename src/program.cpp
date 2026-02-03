@@ -6,6 +6,7 @@
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
 #include <cstdint>
+#include <print>
 #ifndef __EMSCRIPTEN__
 #include <GLFW/glfw3native.h>
 #else
@@ -28,10 +29,7 @@ Program::Program()
 	bgfx::init();
 	this->win = EngineWindow(NAME, 400, 400);
 }
-Program::~Program()
-{
-	glfwTerminate();
-}
+Program::~Program() { glfwTerminate(); }
 
 void Program::Run()
 {
@@ -105,7 +103,7 @@ void Program::Draw() const
 	const bx::Vec3 eye = {0.0f, 0.0f, -35.0f};
 	{
 		Matrix viewMat{Mat4::Identity()};
-		viewMat[0,0];
+		viewMat[0, 0];
 		float view[16];
 		bx::mtxLookAt(view, eye, at);
 
