@@ -56,3 +56,19 @@ target_include_directories(
     "${CMAKE_BINARY_DIR}/_deps/bgfx-src/bimg/include/"
 )
 message("Done!")
+
+message("Fetching assimp")
+FetchContent_Declare(
+    assimp
+    GIT_REPOSITORY https://github.com/assimp/assimp.git
+    GIT_TAG v6.0.4
+    GIT_SHALLOW ON
+    GIT_PROGRESS ON
+)
+FetchContent_MakeAvailable(assimp)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE assimp)
+target_include_directories(
+    "${CMAKE_PROJECT_NAME}" PUBLIC
+    "${CMAKE_BINARY_DIR}/_deps/bgfx-src/bx/include/"
+)
+message("Done!")

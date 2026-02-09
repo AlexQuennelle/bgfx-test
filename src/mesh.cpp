@@ -21,6 +21,10 @@ Mesh::Mesh(const std::array<Vertex, 8>& data)
 	this->shader = CreateShaderProgram(SHADERS "cubes.vert.bin",
 									   SHADERS "cubes.frag.bin");
 }
+Mesh::Mesh(const std::string& filepath)
+{
+	// Assimp::Importer importer;
+}
 Mesh::Mesh(Mesh&& other) noexcept :
 	vertexBuffer(other.vertexBuffer),
 	indexBuffer(other.indexBuffer),

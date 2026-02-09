@@ -5,6 +5,7 @@
 
 #include <array>
 #include <bgfx/bgfx.h>
+#include <string>
 
 struct Vertex
 {
@@ -25,6 +26,7 @@ class Mesh
 	public:
 	Mesh() = default;
 	Mesh(const std::array<Vertex, 8>& data);
+	Mesh(const std::string& filepath);
 	Mesh(const Mesh&) = delete;
 	Mesh(Mesh&& other) noexcept;
 	~Mesh();
