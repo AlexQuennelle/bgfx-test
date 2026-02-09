@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <format>
 #include <iostream>
+#include <numbers>
 
 template <uint64_t W, uint64_t H = W> class Matrix
 {

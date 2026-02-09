@@ -6,7 +6,6 @@
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
 #include <cstdint>
-#include <print>
 #ifndef __EMSCRIPTEN__
 #include <GLFW/glfw3native.h>
 #else
