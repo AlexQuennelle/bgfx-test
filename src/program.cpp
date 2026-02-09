@@ -75,22 +75,14 @@ void Program::Init()
 
 	init.resolution.width = static_cast<uint32_t>(this->win.GetHeight());
 	init.resolution.height = static_cast<uint32_t>(this->win.GetWidth());
-	init.resolution.reset = BGFX_RESET_VSYNC;
+	init.resolution.reset = BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4;
 
 	bgfx::init(init);
 
-	// HACK: BGFX example code
 	bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00FF00FF, 1.0f,
 					   0);
 
 	Vertex::Init();
-	// m_vbh = bgfx::createVertexBuffer(
-	// 	bgfx::makeRef(testCube.data(), sizeof(testCube)), Vertex::layout);
-	// m_ibh = bgfx::createIndexBuffer(
-	// 	bgfx::makeRef(testIndices.data(), sizeof(testIndices)));
-
-	// this->shader = CreateShaderProgram(SHADERS "cubes.vert.bin",
-	// 								   SHADERS "cubes.frag.bin");
 
 	test = Mesh(testCube);
 }
@@ -99,20 +91,17 @@ void Program::Draw() const
 {
 	this->win.BeginContext();
 	glfwPollEvents();
-	const bx::Vec3 at = {0.0f, 0.0f, 0.0f};
-	const bx::Vec3 eye = {0.0f, 0.0f, -35.0f};
+	const Vector3 at = {.x = 0.0f, .y = 0.0f, .z = 0.0f};
+	const Vector3 eye = {.x = 0.0f, .y = 0.0f, .z = -35.0f};
 	{
-		Matrix viewMat{Mat4::Identity()};
-		viewMat[0, 0];
-		float view[16];
-		bx::mtxLookAt(view, eye, at);
+		Matrix viewMat{Matrix<4>::LookAt(eye, at)};
 
-		float proj[16];
-		bx::mtxProj(proj, 60.0f,
-					static_cast<float>(this->win.GetWidth())
-						/ static_cast<float>(this->win.GetWidth()),
-					0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-		bgfx::setViewTransform(0, view, proj);
+		Matrix projMat{Matrix<4>::Projection(
+			60.0f,
+			static_cast<float>(this->win.GetWidth())
+				/ static_cast<float>(this->win.GetWidth()),
+			0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth)};
+		bgfx::setViewTransform(0, viewMat.Data(), projMat.Data());
 
 		// Set view 0 default viewport.
 		bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(this->win.GetWidth()),
@@ -137,21 +126,9 @@ void Program::Draw() const
 
 			// Set model matrix for rendering.
 			bgfx::setTransform(mtx);
-
-			// Set vertex and index buffer.
-			// bgfx::setVertexBuffer(0, m_vbh);
-			// bgfx::setIndexBuffer(m_ibh);
 			this->test.Draw();
-
-			// Set render states.
-			// bgfx::setState(state);
-
-			// Submit primitive for rendering to view 0.
-			// bgfx::submit(0, shader);
 		}
 	}
-	// bgfx::touch(0);
-	// test.Draw();
 	bgfx::frame();
 }
 
