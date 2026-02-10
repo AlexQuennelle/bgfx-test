@@ -11,19 +11,23 @@
 
 bgfx::VertexLayout Vertex::layout;
 
-Mesh::Mesh(const std::array<Vertex, 8>& data)
+Mesh::Mesh(const std::array<Vertex, 4>& data,
+		   const std::array<uint16_t, 6>& indices)
 {
-	// static bgfx::VertexLayout layout;
-	// {
-	// 	layout.begin()
-	// 		.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-	// 		.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
-	// 		.end();
-	// }
 	this->vertexBuffer = bgfx::createVertexBuffer(
 		bgfx::makeRef(data.data(), sizeof(data)), Vertex::layout);
 	this->indexBuffer = bgfx::createIndexBuffer(
-		bgfx::makeRef(testIndices.data(), sizeof(testIndices)));
+		bgfx::makeRef(indices.data(), sizeof(indices)));
+	this->shader = CreateShaderProgram(SHADERS "cubes.vert.bin",
+									   SHADERS "cubes.frag.bin");
+}
+Mesh::Mesh(const std::array<Vertex, 8>& data,
+		   const std::array<uint16_t, 36>& indices)
+{
+	this->vertexBuffer = bgfx::createVertexBuffer(
+		bgfx::makeRef(data.data(), sizeof(data)), Vertex::layout);
+	this->indexBuffer = bgfx::createIndexBuffer(
+		bgfx::makeRef(indices.data(), sizeof(indices)));
 	this->shader = CreateShaderProgram(SHADERS "cubes.vert.bin",
 									   SHADERS "cubes.frag.bin");
 }
@@ -41,6 +45,7 @@ Mesh::Mesh(const std::string& filepath)
 	auto* mesh = scene->mMeshes[0]; // NOLINT
 
 	std::vector<Vertex> vertexData(mesh->mNumVertices);
+	// this->vertexData.resize(mesh->mNumVertices);
 	std::println("{} has {} vertices and {} faces", mesh->mName.C_Str(),
 				 mesh->mNumVertices, mesh->mNumFaces);
 	for (int i{0}; i < mesh->mNumVertices; i++)
@@ -48,13 +53,16 @@ Mesh::Mesh(const std::string& filepath)
 		auto floatCol{mesh->mColors[0][i]};
 		auto meshPos{mesh->mVertices[i]};
 		Vector3 pos{.x = meshPos.x, .y = meshPos.y, .z = meshPos.z};
-		std::println("{}: {:.7f} {:.7f} {:.7f}", i, pos.x, pos.y, pos.z);
+		std::print("{}: {:.6f} {:.6f} {:.6f}", i, pos.x, pos.y, pos.z);
 		Color col{
 			.r = static_cast<uint8_t>(std::round(floatCol.r * 255)),
 			.g = static_cast<uint8_t>(std::round(floatCol.g * 255)),
 			.b = static_cast<uint8_t>(std::round(floatCol.b * 255)),
-			.a = static_cast<uint8_t>(std::round(floatCol.a * 255)),
+			// .a = static_cast<uint8_t>(std::round(floatCol.a * 255)),
+			.a = 255,
 		};
+		std::println("  {:02x} {:02x} {:02x} {:02x}", col.r, col.g, col.b,
+					 col.a);
 		vertexData[i] = {.pos = pos, .col = col};
 	}
 	std::vector<uint16_t> indices;
@@ -77,7 +85,7 @@ Mesh::Mesh(const std::string& filepath)
 		auto face{mesh->mFaces[i]};
 		for (int j{0}; j < face.mNumIndices; j++)
 		{
-			std::print("{}/",face.mIndices[j]);
+			std::print("{}/", face.mIndices[j]);
 			indices.push_back(static_cast<uint16_t>(face.mIndices[j]));
 		}
 		std::cout << '\n';

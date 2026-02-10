@@ -601,18 +601,18 @@ template <> class Matrix<4>
 		return FromBasis(right, up, forward, eyePos);
 	}
 	static auto Projection(const float fovY, const float aspectRatio,
-						   const float near, const float far,
+						   const float _near, const float _far,
 						   const bool homogeneousNDC)
 	{
 		const float height{
 			1.0f / std::tan(fovY * (std::numbers::pi_v<float> / 180.0f) * 0.5f),
 		};
 		const float width{height * (1.0f / aspectRatio)};
-		const float depthRange{far - near};
-		const float aa{homogeneousNDC ? (far + near) / depthRange
-									  : far / depthRange};
-		const float bb{homogeneousNDC ? (2.0f * far * near) / depthRange
-									  : near * aa};
+		const float depthRange{_far - _near};
+		const float aa{homogeneousNDC ? (_far + _near) / depthRange
+									  : _far / depthRange};
+		const float bb{homogeneousNDC ? (2.0f * _far * _near) / depthRange
+									  : _near * aa};
 		Matrix<4> result{};
 		result[0, 0] = width;
 		result[1, 1] = height;

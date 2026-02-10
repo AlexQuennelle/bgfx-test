@@ -83,8 +83,8 @@ void Program::Init()
 
 	Vertex::Init();
 
-	test = Mesh(RESOURCES_PATH "Cube.obj");
-	// test = Mesh(testCube);
+	test = Mesh(RESOURCES_PATH "Plane.obj");
+	// test = Mesh(testPlane, planeIndices);
 }
 void Program::Update() { }
 void Program::Draw() const
@@ -92,7 +92,7 @@ void Program::Draw() const
 	this->win.BeginContext();
 	glfwPollEvents();
 	const Vector3 at = {.x = 0.0f, .y = 0.0f, .z = 0.0f};
-	const Vector3 eye = {.x = 0.0f, .y = 0.0f, .z = -35.0f};
+	const Vector3 eye = {.x = 0.0f, .y = 2.0f, .z = -4.0f};
 	{
 		Matrix viewMat{Matrix<4>::LookAt(eye, at)};
 
@@ -114,21 +114,24 @@ void Program::Draw() const
 					  static_cast<uint16_t>(this->win.GetHeight()));
 	bgfx::touch(0);
 
-	for (uint32_t yy = 0; yy < 11; ++yy)
-	{
-		for (uint32_t xx = 0; xx < 11; ++xx)
-		{
-			float mtx[16];
-			bx::mtxRotateXY(mtx, xx * 0.21f, yy * 0.37f);
-			mtx[12] = -15.0f + float(xx) * 3.0f;
-			mtx[13] = -15.0f + float(yy) * 3.0f;
-			mtx[14] = 0.0f;
+	auto modelMat{Matrix<4>::Identity()};
+	bgfx::setTransform(modelMat.Data());
+	this->test.Draw();
+	// for (uint32_t yy = 0; yy < 11; ++yy)
+	// {
+	// 	for (uint32_t xx = 0; xx < 11; ++xx)
+	// 	{
+	// 		float mtx[16];
+	// 		bx::mtxRotateXY(mtx, xx * 0.21f, yy * 0.37f);
+	// 		mtx[12] = -15.0f + float(xx) * 3.0f;
+	// 		mtx[13] = -15.0f + float(yy) * 3.0f;
+	// 		mtx[14] = 0.0f;
 
-			// Set model matrix for rendering.
-			bgfx::setTransform(mtx);
-			this->test.Draw();
-		}
-	}
+	// 		// Set model matrix for rendering.
+	// 		bgfx::setTransform(mtx);
+	// 		this->test.Draw();
+	// 	}
+	// }
 	bgfx::frame();
 }
 
