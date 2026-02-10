@@ -68,7 +68,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(assimp)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE assimp)
 target_include_directories(
-    "${CMAKE_PROJECT_NAME}" PUBLIC
-    "${CMAKE_BINARY_DIR}/_deps/bgfx-src/bx/include/"
+    "${CMAKE_PROJECT_NAME}" PUBLIC SYSTEM
+    "${CMAKE_BINARY_DIR}/_deps/assimp-src/include/"
 )
 message("Done!")

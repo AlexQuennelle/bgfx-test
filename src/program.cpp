@@ -83,7 +83,8 @@ void Program::Init()
 
 	Vertex::Init();
 
-	test = Mesh(testCube);
+	test = Mesh(RESOURCES_PATH "Cube.obj");
+	// test = Mesh(testCube);
 }
 void Program::Update() { }
 void Program::Draw() const
