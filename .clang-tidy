@@ -26,6 +26,7 @@ Checks: "-*,
         -cppcoreguidelines-non-private-member-variables-in-classes,
         -cppcoreguidelines-avoid-magic-numbers,
         -cppcoreguidelines-avoid-const-or-ref-data-members,
+        -cppcoreguidelines-pro-bounds-constant-array-index,
 
         misc-*,
         -misc-use-internal-linkage,
@@ -37,7 +38,7 @@ FormatStyle:     file
 
 CheckOptions:
   - key: readability-identifier-length.IgnoredVariableNames
-    value: 'x|y|z|i|j|t'
+    value: 'x|y|z|i|j|t|a|b|c'
   - key: readability-identifier-length.IgnoredParameterNames
     value: 'x|y|z|i|j|a|b|c'
   - key: readability-identifier-length.MinimumLoopCounterNameLength

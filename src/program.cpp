@@ -6,6 +6,7 @@
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
 #include <cstdint>
+#include <print>
 #ifndef __EMSCRIPTEN__
 #include <GLFW/glfw3native.h>
 #else
@@ -77,18 +78,29 @@ void Program::Init()
 	init.resolution.reset = BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4;
 
 	bgfx::init(init);
+	lastFrame = bx::getNow();
 
 	bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00FF00FF, 1.0f,
 					   0);
 
 	Vertex::Init();
+	this->modelMat = Matrix<4>::Identity();
 
-	test = Mesh(RESOURCES_PATH "Plane.obj");
+	test = Mesh(RESOURCES_PATH "Cube.obj");
 	// test = Mesh(testPlane, planeIndices);
 }
-void Program::Update() { }
+void Program::Update()
+{
+	this->deltaTime = static_cast<float>(
+		static_cast<double>(bx::getNow().ticks - this->lastFrame.ticks)
+		/ static_cast<double>(this->lastFrame.s_kFreq.ticks));
+	this->lastFrame = bx::getNow();
+	this->modelMat =  modelMat.RotateY(15.0f * this->deltaTime);
+	// this->modelMat *= Matrix<4>::FromAngleY(5.0f * this->deltaTime);
+}
 void Program::Draw() const
 {
+	// std::println("DT: {}", this->deltaTime);
 	this->win.BeginContext();
 	glfwPollEvents();
 	const Vector3 at = {.x = 0.0f, .y = 0.0f, .z = 0.0f};
@@ -114,7 +126,7 @@ void Program::Draw() const
 					  static_cast<uint16_t>(this->win.GetHeight()));
 	bgfx::touch(0);
 
-	auto modelMat{Matrix<4>::Identity()};
+	// auto modelMat{Matrix<4>::Identity()};
 	bgfx::setTransform(modelMat.Data());
 	this->test.Draw();
 	// for (uint32_t yy = 0; yy < 11; ++yy)

@@ -20,9 +20,9 @@ template <uint64_t W, uint64_t H = W> class Matrix
 	auto Transpose() const -> Matrix<H, W>
 	{
 		Matrix<H, W> newMat{};
-		for (int x{0}; x < W; x++)
+		for (uint64_t x{0}; x < W; x++)
 		{
-			for (int y{0}; y < H; y++)
+			for (uint64_t y{0}; y < H; y++)
 			{
 				newMat[x, y] = (*this)[y, x];
 			}
@@ -119,11 +119,11 @@ template <uint64_t W, uint64_t H = W> class Matrix
 	auto operator=(Matrix&&) -> Matrix& = default;
 	auto operator[](const uint64_t x, const uint64_t y) const -> float
 	{
-		if (x < 0 || x >= W)
+		if (x >= W)
 		{
 			return 0;
 		}
-		if (y < 0 || y >= H)
+		if (y >= H)
 		{
 			return 0;
 		}
@@ -132,8 +132,8 @@ template <uint64_t W, uint64_t H = W> class Matrix
 	auto operator[](const uint64_t x, const uint64_t y) -> float&
 	{
 #ifndef NDEBUG
-		assert(x >= 0 && x < W);
-		assert(y >= 0 && y < H);
+		assert(x < W);
+		assert(y < H);
 #endif // !NDEBUG
 
 		return data[(x * H) + y];
@@ -252,11 +252,11 @@ template <uint64_t N> class Matrix<N>
 	auto operator=(Matrix&&) -> Matrix& = default;
 	auto operator[](const uint64_t x, const uint64_t y) const -> float
 	{
-		if (x < 0 || x >= N)
+		if (x >= N)
 		{
 			return 0;
 		}
-		if (y < 0 || y >= N)
+		if (y >= N)
 		{
 			return 0;
 		}
@@ -265,8 +265,8 @@ template <uint64_t N> class Matrix<N>
 	auto operator[](const uint64_t x, const uint64_t y) -> float&
 	{
 #ifndef NDEBUG
-		assert(x >= 0 && x < N);
-		assert(y >= 0 && y < N);
+		assert(x < N);
+		assert(y < N);
 #endif // !NDEBUG
 
 		return data[(x * N) + y];
@@ -309,11 +309,11 @@ template <> class Matrix<1, 3>
 	auto operator=(Matrix&&) -> Matrix& = default;
 	auto operator[](const uint64_t x, const uint64_t y) const -> float
 	{
-		if (x < 0 || x >= 1)
+		if (x >= 1)
 		{
 			return 0;
 		}
-		if (y < 0 || y >= 3)
+		if (y >= 3)
 		{
 			return 0;
 		}
@@ -322,8 +322,8 @@ template <> class Matrix<1, 3>
 	auto operator[](const uint64_t x, const uint64_t y) -> float&
 	{
 #ifndef NDEBUG
-		assert(x >= 0 && x < 1);
-		assert(y >= 0 && y < 3);
+		assert(x < 1);
+		assert(y < 3);
 #endif // !NDEBUG
 
 		return data[(x * 1) + y]; // NOLINT
@@ -342,14 +342,17 @@ template <> class Matrix<4>
 	Matrix() = default;
 	~Matrix() = default;
 
-	Matrix(const Matrix&) = default;
-	Matrix(Matrix&&) = default;
+	Matrix(const Matrix<4>&) = default;
+	Matrix(Matrix<4>&& other) noexcept : data(other.data)
+	{
+		other.data.fill(0.0f);
+	}
 	auto Transpose() const -> Matrix<4>
 	{
 		Matrix<4, 4> newMat{};
-		for (int x{0}; x < 4; x++)
+		for (uint64_t x{0}; x < 4; x++)
 		{
-			for (int y{0}; y < 4; y++)
+			for (uint64_t y{0}; y < 4; y++)
 			{
 				newMat[x, y] = (*this)[y, x];
 			}
@@ -482,7 +485,7 @@ template <> class Matrix<4>
 		}
 
 		std::string str{};
-		for (auto line : lines)
+		for (const auto& line : lines)
 		{
 			str.append(line);
 		}
@@ -493,9 +496,9 @@ template <> class Matrix<4>
 	auto operator+(const Matrix<4>& other) -> Matrix<4>
 	{
 		Matrix<4> mat{};
-		for (int x{0}; x < 4; x++)
+		for (uint64_t x{0}; x < 4; x++)
 		{
-			for (int y{0}; y < 4; y++)
+			for (uint64_t y{0}; y < 4; y++)
 			{
 				mat[x, y] = (*this)[x, y] + other[x, y];
 			}
@@ -505,9 +508,9 @@ template <> class Matrix<4>
 	auto operator-(const Matrix<4>& other) -> Matrix<4>
 	{
 		Matrix<4> mat{};
-		for (int x{0}; x < 4; x++)
+		for (uint64_t x{0}; x < 4; x++)
 		{
-			for (int y{0}; y < 4; y++)
+			for (uint64_t y{0}; y < 4; y++)
 			{
 				mat[x, y] = (*this)[x, y] - other[x, y];
 			}
@@ -531,16 +534,25 @@ template <> class Matrix<4>
 		}
 		return mat;
 	}
+	// auto operator*=(const Matrix<4>& other) -> Matrix<4>&
+	// {
+	// 	return *this;
+	// }
 
-	auto operator=(const Matrix&) -> Matrix& = default;
-	auto operator=(Matrix&&) -> Matrix& = default;
+	auto operator=(const Matrix<4>&) -> Matrix<4>& = default;
+	auto operator=(Matrix<4>&& other) noexcept -> Matrix<4>&
+	{
+		this->data = other.data;
+		other.data.fill(0.0f);
+		return *this;
+	}
 	auto operator[](const uint64_t x, const uint64_t y) const -> float
 	{
-		if (x < 0 || x >= 4)
+		if (x >= 4)
 		{
 			return 0;
 		}
-		if (y < 0 || y >= 4)
+		if (y >= 4)
 		{
 			return 0;
 		}
@@ -549,13 +561,19 @@ template <> class Matrix<4>
 	auto operator[](const uint64_t x, const uint64_t y) -> float&
 	{
 #ifndef NDEBUG
-		assert(x >= 0 && x < 4);
-		assert(y >= 0 && y < 4);
+		assert(x < 4);
+		assert(y < 4);
 #endif // !NDEBUG
 
 		return this->data[(x * 4) + y];
 	}
 
+	auto RotateY(const float angle, const bool degrees = true) const
+		-> Matrix<4>
+	{
+		auto a{*this};
+		return a * FromAngleY(angle, degrees);
+	}
 	static auto Identity() -> Matrix<4, 4>
 	{
 		Matrix mat{};
@@ -609,18 +627,33 @@ template <> class Matrix<4>
 		};
 		const float width{height * (1.0f / aspectRatio)};
 		const float depthRange{_far - _near};
-		const float aa{homogeneousNDC ? (_far + _near) / depthRange
-									  : _far / depthRange};
-		const float bb{homogeneousNDC ? (2.0f * _far * _near) / depthRange
-									  : _near * aa};
+		const float a{homogeneousNDC ? (_far + _near) / depthRange
+									 : _far / depthRange};
+		const float b{homogeneousNDC ? (2.0f * _far * _near) / depthRange
+									 : _near * a};
 		Matrix<4> result{};
 		result[0, 0] = width;
 		result[1, 1] = height;
 		result[2, 0] = -0.0f;
 		result[2, 1] = -0.0f;
-		result[2, 2] = aa;
+		result[2, 2] = a;
 		result[2, 3] = 1.0f;
-		result[3, 2] = -bb;
+		result[3, 2] = -b;
+		return result;
+	}
+	static auto FromAngleY(const float angle, const bool degrees = true)
+		-> Matrix<4>
+	{
+		float rads{degrees ? angle * (std::numbers::pi_v<float> / 180.0f)
+						   : angle};
+		Matrix result{};
+		result[0, 0] = std::cos(rads);
+		result[0, 2] = std::sin(rads);
+		result[1, 1] = 1.0f;
+		result[2, 0] = -std::sin(rads);
+		result[2, 2] = std::cos(rads);
+		result[3, 3] = 1.0f;
+
 		return result;
 	}
 

@@ -40,6 +40,7 @@ Mesh::Mesh(const std::string& filepath)
 										  | aiProcess_Triangulate
 										  | aiProcess_SortByPType
 										  | aiProcess_FixInfacingNormals
+										  | aiProcess_FlipWindingOrder
 										  | aiProcess_OptimizeMeshes
 										  | aiProcess_OptimizeGraph);
 	auto* mesh = scene->mMeshes[0]; // NOLINT
