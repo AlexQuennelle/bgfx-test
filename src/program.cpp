@@ -86,16 +86,19 @@ void Program::Init()
 	Vertex::Init();
 	this->modelMat = Matrix<4>::Identity();
 
-	test = Mesh(RESOURCES_PATH "Cube.obj");
-	// test = Mesh(testPlane, planeIndices);
+	test = Mesh(RESOURCES_PATH "Suzanne.obj");
 }
 void Program::Update()
 {
+	auto spaceKey = glfwGetKey(this->win.GetGLFWHandle(), GLFW_KEY_SPACE);
+	if (spaceKey == GLFW_PRESS)
+		this->spin = !this->spin;
 	this->deltaTime = static_cast<float>(
 		static_cast<double>(bx::getNow().ticks - this->lastFrame.ticks)
 		/ static_cast<double>(this->lastFrame.s_kFreq.ticks));
 	this->lastFrame = bx::getNow();
-	this->modelMat =  modelMat.RotateY(15.0f * this->deltaTime);
+	if (spin)
+		this->modelMat = modelMat.RotateY(15.0f * this->deltaTime);
 	// this->modelMat *= Matrix<4>::FromAngleY(5.0f * this->deltaTime);
 }
 void Program::Draw() const
@@ -127,6 +130,13 @@ void Program::Draw() const
 	bgfx::touch(0);
 
 	// auto modelMat{Matrix<4>::Identity()};
+	auto testState{BGFX_STATE_WRITE_RGB
+				   | BGFX_STATE_WRITE_A
+				   | BGFX_STATE_WRITE_Z
+				   | BGFX_STATE_DEPTH_TEST_LESS
+				   | BGFX_STATE_CULL_CCW
+				   | BGFX_STATE_MSAA};
+	bgfx::setState(testState);
 	bgfx::setTransform(modelMat.Data());
 	this->test.Draw();
 	// for (uint32_t yy = 0; yy < 11; ++yy)

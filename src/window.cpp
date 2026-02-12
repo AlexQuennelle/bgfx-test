@@ -39,6 +39,7 @@ void EngineWindow::BeginContext() const
 
 auto EngineWindow::GetWidth() const -> int { return this->width; };
 auto EngineWindow::GetHeight() const -> int { return this->height; };
+auto EngineWindow::GetGLFWHandle() const -> GLFWwindow* { return this->handle; }
 
 auto EngineWindow::operator=(EngineWindow&& other) noexcept -> EngineWindow&
 {

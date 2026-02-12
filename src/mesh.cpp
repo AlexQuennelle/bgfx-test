@@ -40,7 +40,7 @@ Mesh::Mesh(const std::string& filepath)
 										  | aiProcess_Triangulate
 										  | aiProcess_SortByPType
 										  | aiProcess_FixInfacingNormals
-										  | aiProcess_FlipWindingOrder
+										  // | aiProcess_FlipWindingOrder
 										  | aiProcess_OptimizeMeshes
 										  | aiProcess_OptimizeGraph);
 	auto* mesh = scene->mMeshes[0]; // NOLINT
@@ -94,11 +94,11 @@ Mesh::Mesh(const std::string& filepath)
 	std::println("Index count: {}", indices.size());
 
 	this->vertexBuffer = bgfx::createVertexBuffer(
-		bgfx::makeRef(
+		bgfx::copy(
 			vertexData.data(),
 			static_cast<uint32_t>(vertexData.size() * sizeof(Vertex))),
 		Vertex::layout);
-	this->indexBuffer = bgfx::createIndexBuffer(bgfx::makeRef(
+	this->indexBuffer = bgfx::createIndexBuffer(bgfx::copy(
 		indices.data(),
 		static_cast<uint32_t>(indices.size() * sizeof(uint16_t))));
 	this->shader = CreateShaderProgram(SHADERS "cubes.vert.bin",

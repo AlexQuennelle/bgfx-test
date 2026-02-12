@@ -44,6 +44,7 @@ class EngineWindow
 	}
 	auto GetWidth() const -> int;
 	auto GetHeight() const -> int;
+	auto GetGLFWHandle() const -> GLFWwindow*;
 
 	auto operator=(const EngineWindow&) -> EngineWindow& = delete;
 	auto operator=(EngineWindow&& other) noexcept -> EngineWindow&;

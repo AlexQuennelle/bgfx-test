@@ -41,6 +41,7 @@ class Program
 	float deltaTime{0.0f};
 
 	Matrix<4> modelMat{Matrix<4>::Identity()};
+	bool spin{true};
 };
 
 #ifdef __EMSCRIPTEN__
