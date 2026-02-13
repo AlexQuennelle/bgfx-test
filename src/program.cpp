@@ -27,7 +27,7 @@ Program::Program()
 #endif // !__EMSCRIPTEN__
 	glfwInit();
 	bgfx::init();
-	this->win = EngineWindow(NAME, 400, 400);
+	this->win = EngineWindow(NAME, 800, 800);
 }
 Program::~Program() { glfwTerminate(); }
 
@@ -86,7 +86,7 @@ void Program::Init()
 	Vertex::Init();
 	this->modelMat = Matrix<4>::Identity();
 
-	test = Mesh(RESOURCES_PATH "Suzanne.obj");
+	test = Mesh(RESOURCES_PATH "Cube.obj");
 }
 void Program::Update()
 {
