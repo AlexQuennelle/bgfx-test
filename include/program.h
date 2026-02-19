@@ -33,8 +33,6 @@ class Program
 	EngineWindow win;
 	Mesh test;
 
-	bgfx::VertexBufferHandle m_vbh;
-	bgfx::IndexBufferHandle m_ibh;
 	bgfx::ProgramHandle shader = BGFX_INVALID_HANDLE;
 
 	bx::Ticks lastFrame{bx::InitNone};

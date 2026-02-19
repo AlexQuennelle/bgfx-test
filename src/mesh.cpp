@@ -7,6 +7,7 @@
 #include <bgfx/bgfx.h>
 #include <iostream>
 #include <print>
+#include <ranges>
 #include <vector>
 
 bgfx::VertexLayout Vertex::layout;
@@ -43,25 +44,30 @@ Mesh::Mesh(const std::string& filepath)
 										  // | aiProcess_FlipWindingOrder
 										  | aiProcess_OptimizeMeshes
 										  | aiProcess_OptimizeGraph);
+	// TODO: Add support for multi-mesh objects
 	auto* mesh = scene->mMeshes[0]; // NOLINT
 
-	std::vector<Vertex> vertexData(mesh->mNumVertices);
-	for (int i{0}; i < mesh->mNumVertices; i++)
+	// TODO: Add check to ensure colours are present
+	namespace rv = std::ranges::views;
+	std::vector<Vertex> vertexData;
+	auto test = rv::zip(std::span(mesh->mVertices, mesh->mNumVertices),
+						std::span(mesh->mColors[0], mesh->mNumVertices));
+	vertexData.reserve(mesh->mNumVertices);
+	for (auto [position, color] : test)
 	{
-		auto floatCol{mesh->mColors[0][i]};
-		auto meshPos{mesh->mVertices[i]};
-		Vector3 pos{.x = meshPos.x, .y = meshPos.y, .z = meshPos.z};
-		Color col{
-			.r = static_cast<uint8_t>(std::round(floatCol.r * 255)),
-			.g = static_cast<uint8_t>(std::round(floatCol.g * 255)),
-			.b = static_cast<uint8_t>(std::round(floatCol.b * 255)),
-			.a = static_cast<uint8_t>(std::round(floatCol.a * 255)),
-			.a = 255,
-		};
-		vertexData[i] = {.pos = pos, .col = col};
+		vertexData.push_back({
+			{.x = position.x, .y = position.y, .z = position.z},
+			{
+				.r = static_cast<uint8_t>(std::round(color.r * 255)),
+				.g = static_cast<uint8_t>(std::round(color.g * 255)),
+				.b = static_cast<uint8_t>(std::round(color.b * 255)),
+				.a = static_cast<uint8_t>(std::round(color.a * 255)),
+			},
+		});
 	}
+
 	std::vector<uint16_t> indices;
-	for (int i{0}; i < mesh->mNumFaces; i++)
+	for (uint32_t i{0}; i < mesh->mNumFaces; i++)
 	{
 		auto face{mesh->mFaces[i]};
 		for (int j{0}; j < face.mNumIndices; j++)
@@ -71,13 +77,12 @@ Mesh::Mesh(const std::string& filepath)
 	}
 
 	this->vertexBuffer = bgfx::createVertexBuffer(
-		bgfx::copy(
-			vertexData.data(),
-			static_cast<uint32_t>(vertexData.size() * sizeof(Vertex))),
+		bgfx::copy(vertexData.data(),
+				   static_cast<uint32_t>(vertexData.size() * sizeof(Vertex))),
 		Vertex::layout);
-	this->indexBuffer = bgfx::createIndexBuffer(bgfx::copy(
-		indices.data(),
-		static_cast<uint32_t>(indices.size() * sizeof(uint16_t))));
+	this->indexBuffer = bgfx::createIndexBuffer(
+		bgfx::copy(indices.data(),
+				   static_cast<uint32_t>(indices.size() * sizeof(uint16_t))));
 	this->shader = CreateShaderProgram(SHADERS "cubes.vert.bin",
 									   SHADERS "cubes.frag.bin");
 }

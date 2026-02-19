@@ -15,6 +15,7 @@
 
 Program::Program()
 {
+	// TODO: Pull this out to init function
 #ifndef __EMSCRIPTEN__
 	if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND) != 0)
 	{
@@ -49,6 +50,7 @@ void Program::Run()
 
 void Program::Init()
 {
+	// TODO: Put this in proper init function
 	this->win.BeginContext();
 
 	bgfx::Init init;
@@ -93,6 +95,7 @@ void Program::Update()
 	auto spaceKey = glfwGetKey(this->win.GetGLFWHandle(), GLFW_KEY_SPACE);
 	if (spaceKey == GLFW_PRESS)
 		this->spin = !this->spin;
+	// TODO: Move to time manager object
 	this->deltaTime = static_cast<float>(
 		static_cast<double>(bx::getNow().ticks - this->lastFrame.ticks)
 		/ static_cast<double>(this->lastFrame.s_kFreq.ticks));
@@ -103,7 +106,7 @@ void Program::Update()
 }
 void Program::Draw() const
 {
-	// std::println("DT: {}", this->deltaTime);
+	// TODO: Add event processing API
 	this->win.BeginContext();
 	glfwPollEvents();
 	const Vector3 at = {.x = 0.0f, .y = 0.0f, .z = 0.0f};
@@ -137,6 +140,7 @@ void Program::Draw() const
 				   | BGFX_STATE_CULL_CCW
 				   | BGFX_STATE_MSAA};
 	bgfx::setState(testState);
+	// TODO: Add GameObject/Actor class to encapsulate this stuff
 	bgfx::setTransform(modelMat.Data());
 	this->test.Draw();
 	// for (uint32_t yy = 0; yy < 11; ++yy)
@@ -154,6 +158,7 @@ void Program::Draw() const
 	// 		this->test.Draw();
 	// 	}
 	// }
+	// TODO: Wrap this behind some API
 	bgfx::frame();
 }
 

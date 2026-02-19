@@ -42,6 +42,7 @@ class Mesh
 	private:
 	void Destroy();
 
+	// TODO: Add CPU-side copy of mesh data
 	bgfx::VertexBufferHandle vertexBuffer = BGFX_INVALID_HANDLE;
 	bgfx::IndexBufferHandle indexBuffer = BGFX_INVALID_HANDLE;
 	bgfx::ProgramHandle shader = BGFX_INVALID_HANDLE;
