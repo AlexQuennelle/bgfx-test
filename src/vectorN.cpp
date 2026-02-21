@@ -50,6 +50,8 @@ auto Vector3::operator-() const -> Vector3
 	return {.x = -this->x, .y = -this->y, .z = -this->z};
 }
 
+Vector3::operator Normal3() { return std::bit_cast<Normal3>(*this); }
+
 /******************************** Normal3 *************************************/
 
 auto Normal3::GetX() const -> float { return this->x; }

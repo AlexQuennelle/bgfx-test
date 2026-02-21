@@ -40,6 +40,13 @@ void EngineWindow::BeginContext() const
 auto EngineWindow::GetWidth() const -> int { return this->width; };
 auto EngineWindow::GetHeight() const -> int { return this->height; };
 auto EngineWindow::GetGLFWHandle() const -> GLFWwindow* { return this->handle; }
+auto EngineWindow::GetMousePos() const -> Point2D
+{
+	double x{};
+	double y{};
+	glfwGetCursorPos(this->handle, &x, &y);
+	return {.x = static_cast<int32_t>(x), .y = static_cast<int32_t>(y)};
+}
 
 auto EngineWindow::operator=(EngineWindow&& other) noexcept -> EngineWindow&
 {

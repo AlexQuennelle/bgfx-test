@@ -1,5 +1,6 @@
 #pragma once
 
+#include "quaternion.h"
 #include "vectorN.h"
 
 #include <array>
@@ -652,6 +653,31 @@ template <> class Matrix<4>
 		result[1, 1] = 1.0f;
 		result[2, 0] = -std::sin(rads);
 		result[2, 2] = std::cos(rads);
+		result[3, 3] = 1.0f;
+
+		return result;
+	}
+	static auto FromQuaternion(const Quaternion quat) -> Matrix<4>
+	{
+		float w{quat.GetW()};
+		float x{quat.GetX()};
+		float y{quat.GetY()};
+		float z{quat.GetZ()};
+
+		Matrix result{};
+
+		result[0, 0] = 1.0f - (2.0f * ((y * y) - ((z * z))));
+		result[1, 0] = 2.0f * ((x * y) - (w * z));
+		result[2, 0] = 2.0f * ((x * z) + (w * y));
+
+		result[0, 1] = 2.0f * ((x * y) + (w * z));
+		result[1, 1] = 1.0f - (2.0f * ((x * x) - ((z * z))));
+		result[2, 1] = 2.0f * ((y * z) - (w * x));
+
+		result[0, 2] = 2.0f * ((x * z) - (w * y));
+		result[1, 2] = 2.0f * ((y * z) - (w * x));
+		result[2, 2] = 1.0f - (2.0f * ((x * x) - ((y * y))));
+
 		result[3, 3] = 1.0f;
 
 		return result;

@@ -1,11 +1,15 @@
 #include "program.h"
+#include "backends/imgui_impl_glfw.h"
 #include "matrix.h"
 #include "mesh.h"
+
+#include <imgui/imgui_impl_bgfx.h>
 
 #include <GLFW/glfw3.h>
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
 #include <cstdint>
+#include <imgui.h>
 #include <print>
 #ifndef __EMSCRIPTEN__
 #include <GLFW/glfw3native.h>
@@ -30,7 +34,12 @@ Program::Program()
 	bgfx::init();
 	this->win = EngineWindow(NAME, 800, 800);
 }
-Program::~Program() { glfwTerminate(); }
+Program::~Program()
+{
+	ImGui_ImplGlfw_Shutdown();
+	ImGui_ImplBGFX_Shutdown();
+	glfwTerminate();
+}
 
 void Program::Run()
 {
@@ -80,10 +89,16 @@ void Program::Init()
 	init.resolution.reset = BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X4;
 
 	bgfx::init(init);
+
 	lastFrame = bx::getNow();
 
 	bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00FF00FF, 1.0f,
 					   0);
+
+	// ImGui::CreateContext();
+	ImGui_ImplBGFX_Init();
+	// TODO: Add proper selection for backends
+	ImGui_ImplGlfw_InitForVulkan(this->win.GetGLFWHandle(), false);
 
 	Vertex::Init();
 	this->modelMat = Matrix<4>::Identity();
@@ -104,13 +119,25 @@ void Program::Update()
 		this->modelMat = modelMat.RotateY(15.0f * this->deltaTime);
 	// this->modelMat *= Matrix<4>::FromAngleY(5.0f * this->deltaTime);
 }
-void Program::Draw() const
+void Program::Draw()
 {
 	// TODO: Add event processing API
 	this->win.BeginContext();
 	glfwPollEvents();
+	auto mousePos{this->win.GetMousePos()};
+	// TODO: Fix this shit
+	ImGui_ImplBGFX_NewFrame(mousePos.x, mousePos.y, 0, 0, this->win.GetWidth(),
+							this->win.GetHeight());
+	ImGui_ImplGlfw_NewFrame();
 	const Vector3 at = {.x = 0.0f, .y = 0.0f, .z = 0.0f};
 	const Vector3 eye = {.x = 0.0f, .y = 2.0f, .z = -4.0f};
+
+	bool showDemo{true};
+	if (showDemo)
+	{
+		ImGui::ShowDemoWindow(&showDemo);
+	}
+
 	{
 		Matrix viewMat{Matrix<4>::LookAt(eye, at)};
 
@@ -159,6 +186,7 @@ void Program::Draw() const
 	// 	}
 	// }
 	// TODO: Wrap this behind some API
+	ImGui_ImplBGFX_EndFrame();
 	bgfx::frame();
 }
 

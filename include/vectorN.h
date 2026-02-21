@@ -14,6 +14,7 @@ concept Vector3D = std::is_same_v<T, Vector3> || std::is_same_v<T, Normal3>;
 
 struct Vector3
 {
+	public:
 	float x{0};
 	float y{0};
 	float z{0};
@@ -78,11 +79,18 @@ struct Vector3
 		return {
 			.x = this->x / value, .y = this->y / value, .z = this->z / value};
 	}
+
+	private:
+	explicit operator Normal3();
 };
 
 class Normal3
 {
 	public:
+	Normal3(const Normal3&) = default;
+	Normal3(Normal3&&) = default;
+	~Normal3() = default;
+
 	auto GetX() const -> float;
 	auto GetY() const -> float;
 	auto GetZ() const -> float;
@@ -141,6 +149,9 @@ class Normal3
 		return {
 			.x = this->x / value, .y = this->y / value, .z = this->z / value};
 	}
+
+	auto operator=(const Normal3&) -> Normal3& = default;
+	auto operator=(Normal3&&) -> Normal3& = default;
 
 	static constexpr auto Forward() -> Normal3 { return {0.0f, 0.0f, 1.0f}; }
 	static constexpr auto Right() -> Normal3 { return {1.0f, 0.0f, 0.0f}; }

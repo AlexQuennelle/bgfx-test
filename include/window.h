@@ -1,8 +1,8 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include <vector>
 #include <string>
+#include <vector>
 #ifdef __linux__
 #define GLFW_EXPOSE_NATIVE_WAYLAND
 #define GLFW_EXPOSE_NATIVE_X11
@@ -14,6 +14,12 @@
 #ifndef __EMSCRIPTEN__
 #include <GLFW/glfw3native.h>
 #endif
+
+struct Point2D
+{
+	int32_t x;
+	int32_t y;
+};
 
 class EngineWindow
 {
@@ -45,6 +51,7 @@ class EngineWindow
 	auto GetWidth() const -> int;
 	auto GetHeight() const -> int;
 	auto GetGLFWHandle() const -> GLFWwindow*;
+	auto GetMousePos() const -> Point2D;
 
 	auto operator=(const EngineWindow&) -> EngineWindow& = delete;
 	auto operator=(EngineWindow&& other) noexcept -> EngineWindow&;

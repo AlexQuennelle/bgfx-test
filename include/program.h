@@ -28,7 +28,7 @@ class Program
 	private:
 	void Init();
 	void Update();
-	void Draw() const;
+	void Draw(); // const;
 
 	EngineWindow win;
 	Mesh test;
