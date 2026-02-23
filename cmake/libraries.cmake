@@ -96,10 +96,14 @@ add_library(imgui STATIC
         ${imgui_SOURCE_DIR}/imstb_truetype.h
         ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
         ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.h
-        ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
-        ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.h
+        # ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
+        # ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.h
 )
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE imgui)
 target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR})
+target_include_directories(
+        imgui
+        PUBLIC "${glfw_SOURCE_DIR}/include/"
+)
 message(${imgui_SOURCE_DIR})
 message("Done!")

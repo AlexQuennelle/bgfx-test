@@ -3,6 +3,7 @@
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
  */
 
+#include <array>
 #include <bgfx/bgfx.h>
 #include <bgfx/embedded_shader.h>
 #include <bx/allocator.h>
@@ -23,79 +24,117 @@
 // #include "icons_kenney.ttf.h"
 // #include "icons_font_awesome.ttf.h"
 
-static const bgfx::EmbeddedShader s_embeddedShaders[]
-	= {{"vs_ocornut_imgui",
-		{// {bgfx ::RendererType ::Direct3D11, vs_ocornut_imgui_dx11,
-		 // (sizeof(vs_ocornut_imgui_dx11) / sizeof(vs_ocornut_imgui_dx11[0]))},
-		 {bgfx ::RendererType ::OpenGLES, vs_ocornut_imgui_essl,
-		  (sizeof(vs_ocornut_imgui_essl) / sizeof(vs_ocornut_imgui_essl[0]))},
-		 {bgfx ::RendererType ::OpenGL, vs_ocornut_imgui_glsl,
-		  (sizeof(vs_ocornut_imgui_glsl) / sizeof(vs_ocornut_imgui_glsl[0]))},
-		 {bgfx ::RendererType ::Vulkan, vs_ocornut_imgui_spv,
-		  (sizeof(vs_ocornut_imgui_spv) / sizeof(vs_ocornut_imgui_spv[0]))},
-		 {bgfx ::RendererType ::WebGPU, vs_ocornut_imgui_wgsl,
-		  (sizeof(vs_ocornut_imgui_wgsl) / sizeof(vs_ocornut_imgui_wgsl[0]))},
-		 {bgfx ::RendererType ::Noop,
-		  (const uint8_t*)"VSH\x5\x0\x0\x0\x0\x0\x0", 10},
-		 {bgfx ::RendererType ::Count, __null, 0}}},
-	   {"fs_ocornut_imgui",
-		{// {bgfx ::RendererType ::Direct3D11, fs_ocornut_imgui_dx11,
-		 // (sizeof(fs_ocornut_imgui_dx11) / sizeof(fs_ocornut_imgui_dx11[0]))},
-		 {bgfx ::RendererType ::OpenGLES, fs_ocornut_imgui_essl,
-		  (sizeof(fs_ocornut_imgui_essl) / sizeof(fs_ocornut_imgui_essl[0]))},
-		 {bgfx ::RendererType ::OpenGL, fs_ocornut_imgui_glsl,
-		  (sizeof(fs_ocornut_imgui_glsl) / sizeof(fs_ocornut_imgui_glsl[0]))},
-		 {bgfx ::RendererType ::Vulkan, fs_ocornut_imgui_spv,
-		  (sizeof(fs_ocornut_imgui_spv) / sizeof(fs_ocornut_imgui_spv[0]))},
-		 {bgfx ::RendererType ::WebGPU, fs_ocornut_imgui_wgsl,
-		  (sizeof(fs_ocornut_imgui_wgsl) / sizeof(fs_ocornut_imgui_wgsl[0]))},
-		 {bgfx ::RendererType ::Noop,
-		  (const uint8_t*)"VSH\x5\x0\x0\x0\x0\x0\x0", 10},
-		 {bgfx ::RendererType ::Count, __null, 0}}},
-	   {"vs_imgui_image",
-		{// {bgfx ::RendererType ::Direct3D11, vs_imgui_image_dx11,
-		 //  (sizeof(vs_imgui_image_dx11) / sizeof(vs_imgui_image_dx11[0]))},
-		 {bgfx ::RendererType ::OpenGLES, vs_imgui_image_essl,
-		  (sizeof(vs_imgui_image_essl) / sizeof(vs_imgui_image_essl[0]))},
-		 {bgfx ::RendererType ::OpenGL, vs_imgui_image_glsl,
-		  (sizeof(vs_imgui_image_glsl) / sizeof(vs_imgui_image_glsl[0]))},
-		 {bgfx ::RendererType ::Vulkan, vs_imgui_image_spv,
-		  (sizeof(vs_imgui_image_spv) / sizeof(vs_imgui_image_spv[0]))},
-		 {bgfx ::RendererType ::WebGPU, vs_imgui_image_wgsl,
-		  (sizeof(vs_imgui_image_wgsl) / sizeof(vs_imgui_image_wgsl[0]))},
-		 {bgfx ::RendererType ::Noop,
-		  (const uint8_t*)"VSH\x5\x0\x0\x0\x0\x0\x0", 10},
-		 {bgfx ::RendererType ::Count, __null, 0}}},
-	   {"fs_imgui_image",
-		{// {bgfx ::RendererType ::Direct3D11, fs_imgui_image_dx11,
-		 //  (sizeof(fs_imgui_image_dx11) / sizeof(fs_imgui_image_dx11[0]))},
-		 {bgfx ::RendererType ::OpenGLES, fs_imgui_image_essl,
-		  (sizeof(fs_imgui_image_essl) / sizeof(fs_imgui_image_essl[0]))},
-		 {bgfx ::RendererType ::OpenGL, fs_imgui_image_glsl,
-		  (sizeof(fs_imgui_image_glsl) / sizeof(fs_imgui_image_glsl[0]))},
-		 {bgfx ::RendererType ::Vulkan, fs_imgui_image_spv,
-		  (sizeof(fs_imgui_image_spv) / sizeof(fs_imgui_image_spv[0]))},
-		 {bgfx ::RendererType ::WebGPU, fs_imgui_image_wgsl,
-		  (sizeof(fs_imgui_image_wgsl) / sizeof(fs_imgui_image_wgsl[0]))},
-		 {bgfx ::RendererType ::Noop,
-		  (const uint8_t*)"VSH\x5\x0\x0\x0\x0\x0\x0", 10},
-		 {bgfx ::RendererType ::Count, __null, 0}}},
+static const std::array<bgfx::EmbeddedShader, 5> embeddedShaders = {{
+	{.name = "vs_ocornut_imgui",
+	 .data
+	 = {{.type = bgfx ::RendererType ::Direct3D11,
+		 .data = vs_ocornut_imgui_dxil, // NOLINT
+		 .size
+		 = (sizeof(vs_ocornut_imgui_dxil) / sizeof(vs_ocornut_imgui_dxil[0]))},
+		{.type = bgfx ::RendererType ::OpenGLES,
+		 .data = vs_ocornut_imgui_essl, // NOLINT
+		 .size
+		 = (sizeof(vs_ocornut_imgui_essl) / sizeof(vs_ocornut_imgui_essl[0]))},
+		{.type = bgfx ::RendererType ::OpenGL,
+		 .data = vs_ocornut_imgui_glsl, // NOLINT
+		 .size
+		 = (sizeof(vs_ocornut_imgui_glsl) / sizeof(vs_ocornut_imgui_glsl[0]))},
+		{.type = bgfx ::RendererType ::Vulkan,
+		 .data = vs_ocornut_imgui_spv, // NOLINT
+		 .size
+		 = (sizeof(vs_ocornut_imgui_spv) / sizeof(vs_ocornut_imgui_spv[0]))},
+		{.type = bgfx ::RendererType ::WebGPU,
+		 .data = vs_ocornut_imgui_wgsl, // NOLINT
+		 .size
+		 = (sizeof(vs_ocornut_imgui_wgsl) / sizeof(vs_ocornut_imgui_wgsl[0]))},
+		{.type = bgfx ::RendererType ::Noop,
+		 .data = (const uint8_t*)"VSH\x5\x0\x0\x0\x0\x0\x0",
+		 .size = 10},
+		{.type = bgfx::RendererType::Count, .data = nullptr, .size = 0}}},
 
-	   BGFX_EMBEDDED_SHADER_END()};
+	{.name = "fs_ocornut_imgui",
+	 .data
+	 = {{.type = bgfx ::RendererType ::Direct3D11,
+		 .data = fs_ocornut_imgui_dxil, // NOLINT
+		 .size
+		 = (sizeof(fs_ocornut_imgui_dxil) / sizeof(fs_ocornut_imgui_dxil[0]))},
+		{.type = bgfx ::RendererType ::OpenGLES,
+		 .data = fs_ocornut_imgui_essl, // NOLINT
+		 .size
+		 = (sizeof(fs_ocornut_imgui_essl) / sizeof(fs_ocornut_imgui_essl[0]))},
+		{.type = bgfx ::RendererType ::OpenGL,
+		 .data = fs_ocornut_imgui_glsl, // NOLINT
+		 .size
+		 = (sizeof(fs_ocornut_imgui_glsl) / sizeof(fs_ocornut_imgui_glsl[0]))},
+		{.type = bgfx ::RendererType ::Vulkan,
+		 .data = fs_ocornut_imgui_spv, // NOLINT
+		 .size
+		 = (sizeof(fs_ocornut_imgui_spv) / sizeof(fs_ocornut_imgui_spv[0]))},
+		{.type = bgfx ::RendererType ::WebGPU,
+		 .data = fs_ocornut_imgui_wgsl, // NOLINT
+		 .size
+		 = (sizeof(fs_ocornut_imgui_wgsl) / sizeof(fs_ocornut_imgui_wgsl[0]))},
+		{.type = bgfx ::RendererType ::Noop,
+		 .data = (const uint8_t*)"VSH\x5\x0\x0\x0\x0\x0\x0",
+		 .size = 10},
+		{.type = bgfx ::RendererType ::Count, .data = nullptr, .size = 0}}},
 
-struct FontRangeMerge
-{
-	const void* data;
-	size_t size;
-	ImWchar ranges[3];
-};
+	{.name = "vs_imgui_image",
+	 .data
+	 = {{.type = bgfx ::RendererType ::Direct3D11,
+		 .data = vs_imgui_image_dxil, // NOLINT
+		 .size
+		 = (sizeof(vs_imgui_image_dxil) / sizeof(vs_imgui_image_dxil[0]))},
+		{.type = bgfx ::RendererType ::OpenGLES,
+		 .data = vs_imgui_image_essl, // NOLINT
+		 .size
+		 = (sizeof(vs_imgui_image_essl) / sizeof(vs_imgui_image_essl[0]))},
+		{.type = bgfx ::RendererType ::OpenGL,
+		 .data = vs_imgui_image_glsl, // NOLINT
+		 .size
+		 = (sizeof(vs_imgui_image_glsl) / sizeof(vs_imgui_image_glsl[0]))},
+		{.type = bgfx ::RendererType ::Vulkan,
+		 .data = vs_imgui_image_spv, // NOLINT
+		 .size = (sizeof(vs_imgui_image_spv) / sizeof(vs_imgui_image_spv[0]))},
+		{.type = bgfx ::RendererType ::WebGPU,
+		 .data = vs_imgui_image_wgsl, // NOLINT
+		 .size
+		 = (sizeof(vs_imgui_image_wgsl) / sizeof(vs_imgui_image_wgsl[0]))},
+		{.type = bgfx ::RendererType ::Noop,
+		 .data = (const uint8_t*)"VSH\x5\x0\x0\x0\x0\x0\x0",
+		 .size = 10},
+		{.type = bgfx ::RendererType ::Count, .data = nullptr, .size = 0}}},
 
-// static FontRangeMerge s_fontRangeMerge[] = {
-// 	{s_iconsKenneyTtf, sizeof(s_iconsKenneyTtf), {ICON_MIN_KI, ICON_MAX_KI, 0}},
-// 	{s_iconsFontAwesomeTtf,
-// 	 sizeof(s_iconsFontAwesomeTtf),
-// 	 {ICON_MIN_FA, ICON_MAX_FA, 0}},
-// };
+	{.name = "fs_imgui_image",
+	 .data
+	 = {{.type = bgfx ::RendererType ::Direct3D11,
+		 .data = fs_imgui_image_dxil, // NOLINT
+		 .size
+		 = (sizeof(fs_imgui_image_dxil) / sizeof(fs_imgui_image_dxil[0]))},
+		{.type = bgfx ::RendererType ::OpenGLES,
+		 .data = fs_imgui_image_essl, // NOLINT
+		 .size
+		 = (sizeof(fs_imgui_image_essl) / sizeof(fs_imgui_image_essl[0]))},
+		{.type = bgfx ::RendererType ::OpenGL,
+		 .data = fs_imgui_image_glsl, // NOLINT
+		 .size
+		 = (sizeof(fs_imgui_image_glsl) / sizeof(fs_imgui_image_glsl[0]))},
+		{.type = bgfx ::RendererType ::Vulkan,
+		 .data = fs_imgui_image_spv, // NOLINT
+		 .size = (sizeof(fs_imgui_image_spv) / sizeof(fs_imgui_image_spv[0]))},
+		{.type = bgfx ::RendererType ::WebGPU,
+		 .data = fs_imgui_image_wgsl, // NOLINT
+		 .size
+		 = (sizeof(fs_imgui_image_wgsl) / sizeof(fs_imgui_image_wgsl[0]))},
+		{.type = bgfx ::RendererType ::Noop, // NOLINTNEXTLINE
+		 .data = reinterpret_cast<const uint8_t*>("VSH\x5\x0\x0\x0\x0\x0\x0"),
+		 .size = 10},
+		{.type = bgfx ::RendererType ::Count, .data = nullptr, .size = 0}}},
+
+	{.name = nullptr,
+	 .data
+	 = {{.type = bgfx ::RendererType ::Count, .data = nullptr, .size = 0}}},
+}};
 
 static void* memAlloc(size_t _size, void* _userData);
 static void memFree(void* _ptr, void* _userData);
@@ -171,10 +210,10 @@ struct OcornutImguiContext
 
 		// Avoid rendering when minimized, scale coordinates for retina displays
 		// (screen coordinates != framebuffer coordinates)
-		int32_t dispWidth
-			= int32_t(_drawData->DisplaySize.x * _drawData->FramebufferScale.x);
-		int32_t dispHeight
-			= int32_t(_drawData->DisplaySize.y * _drawData->FramebufferScale.y);
+		auto dispWidth = static_cast<int32_t>(_drawData->DisplaySize.x
+											  * _drawData->FramebufferScale.x);
+		auto dispHeight = static_cast<int32_t>(_drawData->DisplaySize.y
+											   * _drawData->FramebufferScale.y);
 		if (dispWidth <= 0 || dispHeight <= 0)
 		{
 			return;
@@ -207,12 +246,13 @@ struct OcornutImguiContext
 		// Render command lists
 		for (int32_t ii = 0, num = _drawData->CmdListsCount; ii < num; ++ii)
 		{
-			bgfx::TransientVertexBuffer tvb;
-			bgfx::TransientIndexBuffer tib;
+			bgfx::TransientVertexBuffer tvb{};
+			bgfx::TransientIndexBuffer tib{};
 
 			const ImDrawList* drawList = _drawData->CmdLists[ii];
-			uint32_t numVertices = (uint32_t)drawList->VtxBuffer.size();
-			uint32_t numIndices = (uint32_t)drawList->IdxBuffer.size();
+			auto numVertices
+				= static_cast<uint32_t>(drawList->VtxBuffer.size());
+			auto numIndices = static_cast<uint32_t>(drawList->IdxBuffer.size());
 
 			bool checkAvailTransientBuffers{
 				numVertices
@@ -350,9 +390,7 @@ struct OcornutImguiContext
 
 		ImGuiIO& io = ImGui::GetIO();
 
-		io.DisplaySize = ImVec2(1280.0f, 720.0f);
-		io.DeltaTime = 1.0f / 60.0f;
-		io.IniFilename = NULL;
+		io.IniFilename = nullptr;
 
 		setupStyle(true);
 
@@ -363,18 +401,18 @@ struct OcornutImguiContext
 
 		bgfx::RendererType::Enum type = bgfx::getRendererType();
 		m_program = bgfx::createProgram(
-			bgfx::createEmbeddedShader(s_embeddedShaders, type,
+			bgfx::createEmbeddedShader(embeddedShaders.data(), type,
 									   "vs_ocornut_imgui"),
-			bgfx::createEmbeddedShader(s_embeddedShaders, type,
+			bgfx::createEmbeddedShader(embeddedShaders.data(), type,
 									   "fs_ocornut_imgui"),
 			true);
 
 		u_imageLodEnabled
 			= bgfx::createUniform("u_imageLodEnabled", bgfx::UniformType::Vec4);
 		m_imageProgram = bgfx::createProgram(
-			bgfx::createEmbeddedShader(s_embeddedShaders, type,
+			bgfx::createEmbeddedShader(embeddedShaders.data(), type,
 									   "vs_imgui_image"),
-			bgfx::createEmbeddedShader(s_embeddedShaders, type,
+			bgfx::createEmbeddedShader(embeddedShaders.data(), type,
 									   "fs_imgui_image"),
 			true);
 
@@ -385,32 +423,6 @@ struct OcornutImguiContext
 			.end();
 
 		s_tex = bgfx::createUniform("s_tex", bgfx::UniformType::Sampler);
-
-		// {
-		// 	ImFontConfig config;
-		// 	config.FontDataOwnedByAtlas = false;
-		// 	config.MergeMode = false;
-
-		// 	const ImWchar* ranges = io.Fonts->GetGlyphRangesDefault();
-		// 	m_font[ImGui::Font::Regular] = io.Fonts->AddFontFromMemoryTTF(
-		// 		(void*)s_robotoRegularTtf, sizeof(s_robotoRegularTtf),
-		// 		_fontSize, &config, ranges);
-		// 	m_font[ImGui::Font::Mono] = io.Fonts->AddFontFromMemoryTTF(
-		// 		(void*)s_robotoMonoRegularTtf, sizeof(s_robotoMonoRegularTtf),
-		// 		_fontSize - 3.0f, &config, ranges);
-
-		// 	config.MergeMode = true;
-		// 	config.DstFont = m_font[ImGui::Font::Regular];
-
-		// 	// for (uint32_t ii = 0; ii < BX_COUNTOF(s_fontRangeMerge); ++ii)
-		// 	// {
-		// 	// 	const FontRangeMerge& frm = s_fontRangeMerge[ii];
-
-		// 	// 	io.Fonts->AddFontFromMemoryTTF((void*)frm.data, (int)frm.size,
-		// 	// 								   _fontSize - 3.0f, &config,
-		// 	// 								   frm.ranges);
-		// 	// }
-		// }
 
 		// ImGuizmo::Create();
 
@@ -425,8 +437,7 @@ struct OcornutImguiContext
 		{
 			if (1 == texData->RefCount)
 			{
-				ImGui::TextureBgfx tex
-					= bx::bitCast<ImGui::TextureBgfx>(texData->GetTexID());
+				auto tex = bx::bitCast<ImGui::TextureBgfx>(texData->GetTexID());
 				bgfx::destroy(tex.handle);
 				texData->SetTexID(ImTextureID_Invalid);
 				texData->SetStatus(ImTextureStatus_Destroyed);
@@ -460,38 +471,11 @@ struct OcornutImguiContext
 		}
 
 		style.FrameRounding = 4.0f;
-		style.WindowBorderSize = 0.0f;
 	}
 
-	void beginFrame(int32_t _mx, int32_t _my, uint8_t _button, int32_t _scroll,
-					int _width, int _height, int _inputChar,
-					bgfx::ViewId _viewId)
+	void beginFrame()
 	{
-		m_viewId = _viewId;
-
-		ImGuiIO& io = ImGui::GetIO();
-		if (_inputChar >= 0)
-		{
-			io.AddInputCharacter(_inputChar);
-		}
-
-		io.DisplaySize = ImVec2((float)_width, (float)_height);
-
-		const int64_t now = bx::getHPCounter();
-		const int64_t frameTime = now - m_last;
-		m_last = now;
-		const double freq = double(bx::getHPFrequency());
-		io.DeltaTime = float(frameTime / freq);
-
-		// io.AddMousePosEvent((float)_mx, (float)_my);
-		// io.AddMouseButtonEvent(ImGuiMouseButton_Left,
-		// 					   0 != (_button & IMGUI_MBUT_LEFT));
-		// io.AddMouseButtonEvent(ImGuiMouseButton_Right,
-		// 					   0 != (_button & IMGUI_MBUT_RIGHT));
-		// io.AddMouseButtonEvent(ImGuiMouseButton_Middle,
-		// 					   0 != (_button & IMGUI_MBUT_MIDDLE));
-		// io.AddMouseWheelEvent(0.0f, (float)(_scroll - m_lastScroll));
-		m_lastScroll = _scroll;
+		m_viewId = 1;
 
 		ImGui::NewFrame();
 
@@ -519,7 +503,7 @@ struct OcornutImguiContext
 
 static OcornutImguiContext s_ctx;
 
-static void* memAlloc(size_t _size, void* _userData)
+static auto memAlloc(size_t _size, void* _userData) -> void*
 {
 	BX_UNUSED(_userData);
 	return bx::alloc(s_ctx.m_allocator, _size);
@@ -538,13 +522,7 @@ void ImGui_ImplBGFX_Init(float _fontSize, bx::AllocatorI* _allocator)
 
 void ImGui_ImplBGFX_Shutdown() { s_ctx.destroy(); }
 
-void ImGui_ImplBGFX_NewFrame(int32_t _mx, int32_t _my, uint8_t _button,
-							 int32_t _scroll, uint16_t _width, uint16_t _height,
-							 int _inputChar, bgfx::ViewId _viewId)
-{
-	s_ctx.beginFrame(_mx, _my, _button, _scroll, _width, _height, _inputChar,
-					 _viewId);
-}
+void ImGui_ImplBGFX_NewFrame() { s_ctx.beginFrame(); }
 
 void ImGui_ImplBGFX_EndFrame() { s_ctx.endFrame(); }
 

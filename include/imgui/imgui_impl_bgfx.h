@@ -31,9 +31,7 @@ void ImGui_ImplBGFX_Init(float _fontSize = 18.0f,
 						 bx::AllocatorI* _allocator = NULL);
 void ImGui_ImplBGFX_Shutdown();
 
-void ImGui_ImplBGFX_NewFrame(int32_t _mx, int32_t _my, uint8_t _button,
-							 int32_t _scroll, uint16_t _width, uint16_t _height,
-							 int _inputChar = -1, bgfx::ViewId _view = 255);
+void ImGui_ImplBGFX_NewFrame();
 void ImGui_ImplBGFX_EndFrame();
 
 namespace entry
