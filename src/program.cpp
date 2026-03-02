@@ -25,11 +25,14 @@ Program::Program()
 	if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND) != 0)
 	{
 		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+		std::println("Wayland");
 	}
 	else if (glfwPlatformSupported(GLFW_PLATFORM_X11) != 0)
 	{
 		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+		std::println("X11");
 	}
+	raise(SIGTRAP);
 #endif // !__EMSCRIPTEN__
 	glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_FALSE);
 	glfwInit();

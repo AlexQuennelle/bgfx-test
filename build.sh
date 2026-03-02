@@ -16,7 +16,11 @@ elif [ "${buildType^}" != "Debug" ] && [ "${buildType^}" != "Release" ]; then
 fi
 mkdir -p build
 # cd build
-cmake -S . -B ./build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${buildType^}"
+if uname -a | grep -q "WSL2"; then
+	cmake -S . -B ./build -G "Unix Makefiles" -DCONFIG_USE_WAYLAND=OFF -DCMAKE_BUILD_TYPE="${buildType^}"
+else
+	cmake -S . -B ./build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${buildType^}"
+fi
 cmake --build ./build
 # make
 # cd ..
