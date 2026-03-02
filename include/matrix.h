@@ -341,6 +341,7 @@ template <> class Matrix<4>
 {
 	public:
 	Matrix() = default;
+	Matrix(const std::array<float, 16>& data) : data(data) { }
 	~Matrix() = default;
 
 	Matrix(const Matrix<4>&) = default;
@@ -350,7 +351,7 @@ template <> class Matrix<4>
 	}
 	auto Transpose() const -> Matrix<4>
 	{
-		Matrix<4, 4> newMat{};
+		Matrix<4> newMat{};
 		for (uint64_t x{0}; x < 4; x++)
 		{
 			for (uint64_t y{0}; y < 4; y++)
@@ -449,6 +450,15 @@ template <> class Matrix<4>
 			= ((*this)[2, 0] * b03 - (*this)[2, 1] * b01 + (*this)[2, 2] * b00)
 			  * invDet;
 		return result;
+	}
+	auto Translate(const Vector3 translation) const -> Matrix<4>
+	{
+		Matrix<4> newMat{*this};
+		newMat[3, 0] += translation.x;
+		newMat[3, 1] += translation.y;
+		newMat[3, 2] += translation.z;
+
+		return newMat;
 	}
 
 	auto Data() const -> const float* { return this->data.data(); }
@@ -584,6 +594,17 @@ template <> class Matrix<4>
 		}
 		return mat;
 	}
+	static auto FromTranslation(const Vector3 translation)
+	{
+		Matrix<4> result{};
+
+		result[0, 3] = translation.x;
+		result[1, 3] = translation.y;
+		result[2, 3] = translation.z;
+		result[3, 3] = 1.0f;
+
+		return result;
+	}
 	static auto FromBasis(const Normal3 x, const Normal3 y, const Normal3 z,
 						  const Vector3 translation = {}) -> Matrix<4, 4>
 	{
@@ -620,18 +641,18 @@ template <> class Matrix<4>
 		return FromBasis(right, up, forward, eyePos);
 	}
 	static auto Projection(const float fovY, const float aspectRatio,
-						   const float _near, const float _far,
+						   const float near, const float far,
 						   const bool homogeneousNDC)
 	{
 		const float height{
 			1.0f / std::tan(fovY * (std::numbers::pi_v<float> / 180.0f) * 0.5f),
 		};
 		const float width{height * (1.0f / aspectRatio)};
-		const float depthRange{_far - _near};
-		const float a{homogeneousNDC ? (_far + _near) / depthRange
-									 : _far / depthRange};
-		const float b{homogeneousNDC ? (2.0f * _far * _near) / depthRange
-									 : _near * a};
+		const float depthRange{far - near};
+		const float a{homogeneousNDC ? (far + near) / depthRange
+									 : far / depthRange};
+		const float b{homogeneousNDC ? (2.0f * far * near) / depthRange
+									 : near * a};
 		Matrix<4> result{};
 		result[0, 0] = width;
 		result[1, 1] = height;
@@ -640,6 +661,25 @@ template <> class Matrix<4>
 		result[2, 2] = a;
 		result[2, 3] = 1.0f;
 		result[3, 2] = -b;
+		return result;
+	}
+	static auto Orthograpic(const float left, const float right,
+							const float bottom, const float top,
+							const float near, const float far,
+							const bool homogenousNDC, const float offset = 0.0f)
+	{
+		Matrix<4> result{};
+
+		result[0, 0] = 2.0f / (right - left);
+		result[1, 1] = 2.0f / (top - bottom);
+		result[2, 2] = (homogenousNDC ? 2.0f : 1.0f) / (far - near);
+		result[3, 3] = 1.0f;
+
+		result[3, 0] = ((left + right) / (left - right)) + offset;
+		result[3, 1] = ((top + bottom) / (bottom - top));
+		result[3, 2] = ((homogenousNDC ? (near + far) : near) / (near - far));
+		result[3, 3] = 1.0f;
+
 		return result;
 	}
 	static auto FromAngleY(const float angle, const bool degrees = true)

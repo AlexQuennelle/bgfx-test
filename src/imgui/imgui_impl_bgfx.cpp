@@ -13,17 +13,15 @@
 #include <imgui_internal.h>
 
 #include <imgui/imgui_impl_bgfx.h>
+#include <string>
 
 #include "imgui/fs_imgui_image.bin.h"
 #include "imgui/fs_ocornut_imgui.bin.h"
 #include "imgui/vs_imgui_image.bin.h"
 #include "imgui/vs_ocornut_imgui.bin.h"
+#include "matrix.h"
 
-// #include "roboto_regular.ttf.h"
-// #include "robotomono_regular.ttf.h"
-// #include "icons_kenney.ttf.h"
-// #include "icons_font_awesome.ttf.h"
-
+static constexpr std::string noop{"VSH\x5\x0\x0\x0\x0\x0\x0"}; // NOLINT
 static const std::array<bgfx::EmbeddedShader, 5> embeddedShaders = {{
 	{.name = "vs_ocornut_imgui",
 	 .data
@@ -48,7 +46,7 @@ static const std::array<bgfx::EmbeddedShader, 5> embeddedShaders = {{
 		 .size
 		 = (sizeof(vs_ocornut_imgui_wgsl) / sizeof(vs_ocornut_imgui_wgsl[0]))},
 		{.type = bgfx ::RendererType ::Noop,
-		 .data = (const uint8_t*)"VSH\x5\x0\x0\x0\x0\x0\x0",
+		 .data = std::bit_cast<const uint8_t*>(noop.c_str()),
 		 .size = 10},
 		{.type = bgfx::RendererType::Count, .data = nullptr, .size = 0}}},
 
@@ -75,7 +73,7 @@ static const std::array<bgfx::EmbeddedShader, 5> embeddedShaders = {{
 		 .size
 		 = (sizeof(fs_ocornut_imgui_wgsl) / sizeof(fs_ocornut_imgui_wgsl[0]))},
 		{.type = bgfx ::RendererType ::Noop,
-		 .data = (const uint8_t*)"VSH\x5\x0\x0\x0\x0\x0\x0",
+		 .data = std::bit_cast<const uint8_t*>(noop.c_str()),
 		 .size = 10},
 		{.type = bgfx ::RendererType ::Count, .data = nullptr, .size = 0}}},
 
@@ -101,7 +99,7 @@ static const std::array<bgfx::EmbeddedShader, 5> embeddedShaders = {{
 		 .size
 		 = (sizeof(vs_imgui_image_wgsl) / sizeof(vs_imgui_image_wgsl[0]))},
 		{.type = bgfx ::RendererType ::Noop,
-		 .data = (const uint8_t*)"VSH\x5\x0\x0\x0\x0\x0\x0",
+		 .data = std::bit_cast<const uint8_t*>(noop.c_str()),
 		 .size = 10},
 		{.type = bgfx ::RendererType ::Count, .data = nullptr, .size = 0}}},
 
@@ -136,16 +134,16 @@ static const std::array<bgfx::EmbeddedShader, 5> embeddedShaders = {{
 	 = {{.type = bgfx ::RendererType ::Count, .data = nullptr, .size = 0}}},
 }};
 
-static void* memAlloc(size_t _size, void* _userData);
-static void memFree(void* _ptr, void* _userData);
+static auto memAlloc(size_t _size, void* _userData) -> void*; // NOLINT
+static void memFree(void* _ptr, void* _userData);			  // NOLINT
 
 struct OcornutImguiContext
 {
-	void render(ImDrawData* _drawData)
+	void render(ImDrawData* drawData)
 	{
-		if (NULL != _drawData->Textures)
+		if (drawData->Textures != nullptr)
 		{
-			for (ImTextureData* texData : *_drawData->Textures)
+			for (ImTextureData* texData : *drawData->Textures)
 			{
 				switch (texData->Status)
 				{
@@ -153,8 +151,9 @@ struct OcornutImguiContext
 				{
 					ImGui::TextureBgfx tex = {
 						.handle = bgfx::createTexture2D(
-							(uint16_t)texData->Width, (uint16_t)texData->Height,
-							false, 1, bgfx::TextureFormat::BGRA8, 0),
+							static_cast<uint16_t>(texData->Width),
+							static_cast<uint16_t>(texData->Height), false, 1,
+							bgfx::TextureFormat::BGRA8, 0),
 						.flags = IMGUI_FLAGS_ALPHA_BLEND,
 						.mip = 0,
 						.unused = 0,
@@ -165,8 +164,9 @@ struct OcornutImguiContext
 						tex.handle, 0, 0, 0, 0,
 						bx::narrowCast<uint16_t>(texData->Width),
 						bx::narrowCast<uint16_t>(texData->Height),
-						bgfx::copy(texData->GetPixels(),
-								   texData->GetSizeInBytes()));
+						bgfx::copy(
+							texData->GetPixels(),
+							static_cast<uint32_t>(texData->GetSizeInBytes())));
 
 					texData->SetTexID(bx::bitCast<ImTextureID>(tex));
 					texData->SetStatus(ImTextureStatus_OK);
@@ -175,27 +175,29 @@ struct OcornutImguiContext
 
 				case ImTextureStatus_WantDestroy:
 				{
-					ImGui::TextureBgfx tex
+					auto tex
 						= bx::bitCast<ImGui::TextureBgfx>(texData->GetTexID());
 					bgfx::destroy(tex.handle);
-					texData->SetTexID(ImTextureID_Invalid);
+					texData->SetTexID(0);
 					texData->SetStatus(ImTextureStatus_Destroyed);
 				}
 				break;
 
 				case ImTextureStatus_WantUpdates:
 				{
-					ImGui::TextureBgfx tex
+					auto tex
 						= bx::bitCast<ImGui::TextureBgfx>(texData->GetTexID());
 
 					for (ImTextureRect& rect : texData->Updates)
 					{
-						const uint32_t bpp = texData->BytesPerPixel;
+						const auto bpp
+							= static_cast<uint32_t>(texData->BytesPerPixel);
 						const bgfx::Memory* pix
 							= bgfx::alloc(rect.h * rect.w * bpp);
 						bx::gather(pix->data,
 								   texData->GetPixelsAt(rect.x, rect.y),
-								   texData->GetPitch(), rect.w * bpp, rect.h);
+								   static_cast<uint32_t>(texData->GetPitch()),
+								   rect.w * bpp, rect.h);
 						bgfx::updateTexture2D(tex.handle, 0, 0, rect.x, rect.y,
 											  rect.w, rect.h, pix);
 					}
@@ -210,10 +212,10 @@ struct OcornutImguiContext
 
 		// Avoid rendering when minimized, scale coordinates for retina displays
 		// (screen coordinates != framebuffer coordinates)
-		auto dispWidth = static_cast<int32_t>(_drawData->DisplaySize.x
-											  * _drawData->FramebufferScale.x);
-		auto dispHeight = static_cast<int32_t>(_drawData->DisplaySize.y
-											   * _drawData->FramebufferScale.y);
+		auto dispWidth = static_cast<int32_t>(drawData->DisplaySize.x
+											  * drawData->FramebufferScale.x);
+		auto dispHeight = static_cast<int32_t>(drawData->DisplaySize.y
+											   * drawData->FramebufferScale.y);
 		if (dispWidth <= 0 || dispHeight <= 0)
 		{
 			return;
@@ -221,36 +223,35 @@ struct OcornutImguiContext
 
 		bgfx::setViewName(m_viewId, "ImGui");
 		bgfx::setViewMode(m_viewId, bgfx::ViewMode::Sequential);
-		// bgfx::setViewClear(m_viewId, BGFX_CLEAR_COLOR, 0x00000000, 1.0f, 0);
 
 		const bgfx::Caps* caps = bgfx::getCaps();
 		{
-			float ortho[16];
-			float x = _drawData->DisplayPos.x;
-			float y = _drawData->DisplayPos.y;
-			float width = _drawData->DisplaySize.x;
-			float height = _drawData->DisplaySize.y;
+			float x = drawData->DisplayPos.x;
+			float y = drawData->DisplayPos.y;
+			float width = drawData->DisplaySize.x;
+			float height = drawData->DisplaySize.y;
 
-			bx::mtxOrtho(ortho, x, x + width, y + height, y, 0.0f, 1000.0f,
-						 0.0f, caps->homogeneousDepth);
-			bgfx::setViewTransform(m_viewId, NULL, ortho);
+			auto viewMat{Matrix<4>::Orthograpic(x, x + width, y + height, y,
+												0.0f, 1000.0f,
+												caps->homogeneousDepth)};
+			bgfx::setViewTransform(m_viewId, nullptr, viewMat.Data());
 			bgfx::setViewRect(m_viewId, 0, 0, uint16_t(width),
 							  uint16_t(height));
 		}
 
 		const ImVec2 clipPos
-			= _drawData->DisplayPos; // (0,0) unless using multi-viewports
+			= drawData->DisplayPos; // (0,0) unless using multi-viewports
 		const ImVec2 clipScale
-			= _drawData->FramebufferScale; // (1,1) unless using retina display
+			= drawData->FramebufferScale; // (1,1) unless using retina display
 										   // which are often (2,2)
 
 		// Render command lists
-		for (int32_t ii = 0, num = _drawData->CmdListsCount; ii < num; ++ii)
+		for (int32_t ii = 0, num = drawData->CmdListsCount; ii < num; ++ii)
 		{
 			bgfx::TransientVertexBuffer tvb{};
 			bgfx::TransientIndexBuffer tib{};
 
-			const ImDrawList* drawList = _drawData->CmdLists[ii];
+			const ImDrawList* drawList = drawData->CmdLists[ii];
 			auto numVertices
 				= static_cast<uint32_t>(drawList->VtxBuffer.size());
 			auto numIndices = static_cast<uint32_t>(drawList->IdxBuffer.size());
@@ -273,44 +274,41 @@ struct OcornutImguiContext
 			bgfx::allocTransientIndexBuffer(&tib, numIndices,
 											sizeof(ImDrawIdx) == 4);
 
-			ImDrawVert* verts = (ImDrawVert*)tvb.data;
+			auto* verts = std::bit_cast<ImDrawVert*>(tvb.data);
 			bx::memCopy(verts, drawList->VtxBuffer.begin(),
 						numVertices * sizeof(ImDrawVert));
 
-			ImDrawIdx* indices = (ImDrawIdx*)tib.data;
+			auto* indices = std::bit_cast<ImDrawIdx*>(tib.data);
 			bx::memCopy(indices, drawList->IdxBuffer.begin(),
 						numIndices * sizeof(ImDrawIdx));
 
 			bgfx::Encoder* encoder = bgfx::begin();
 
-			for (const ImDrawCmd *cmd = drawList->CmdBuffer.begin(),
-								 *cmdEnd = drawList->CmdBuffer.end();
-				 cmd != cmdEnd; ++cmd)
+			for (const auto& cmd : drawList->CmdBuffer)
 			{
-				if (cmd->UserCallback)
+				if (cmd.UserCallback != nullptr)
 				{
-					cmd->UserCallback(drawList, cmd);
+					cmd.UserCallback(drawList, &cmd);
 				}
-				else if (0 != cmd->ElemCount)
+				else if (0 != cmd.ElemCount)
 				{
 					uint64_t state = 0
 									 | BGFX_STATE_WRITE_RGB
 									 | BGFX_STATE_WRITE_A
-									 | BGFX_STATE_BLEND_ALPHA
-									 | BGFX_STATE_MSAA;
+									 | BGFX_STATE_BLEND_ALPHA // NOLINT
+									 | BGFX_STATE_MSAA;		  // NOLINT
 
 					bgfx::TextureHandle th = BGFX_INVALID_HANDLE;
 					bgfx::ProgramHandle program = m_program;
 
-					const ImTextureID texId = cmd->GetTexID();
+					const ImTextureID texId = cmd.GetTexID();
 
-					if (ImTextureID_Invalid != texId)
+					if (texId != 0)
 					{
-						ImGui::TextureBgfx tex
-							= bx::bitCast<ImGui::TextureBgfx>(texId);
+						auto tex = bx::bitCast<ImGui::TextureBgfx>(texId);
 
 						state |= 0 != (IMGUI_FLAGS_ALPHA_BLEND & tex.flags)
-									 ? BGFX_STATE_BLEND_FUNC(
+									 ? BGFX_STATE_BLEND_FUNC( // NOLINT
 										   BGFX_STATE_BLEND_SRC_ALPHA,
 										   BGFX_STATE_BLEND_INV_SRC_ALPHA)
 									 : BGFX_STATE_NONE;
@@ -318,15 +316,16 @@ struct OcornutImguiContext
 
 						if (0 != tex.mip)
 						{
-							const float lodEnabled[4]
+							const std::array<float, 4> lodEnabled
 								= {float(tex.mip), 1.0f, 0.0f, 0.0f};
-							bgfx::setUniform(u_imageLodEnabled, lodEnabled);
+							bgfx::setUniform(u_imageLodEnabled,
+											 lodEnabled.data());
 							program = m_imageProgram;
 						}
 					}
 					else
 					{
-						state |= BGFX_STATE_BLEND_FUNC(
+						state |= BGFX_STATE_BLEND_FUNC( // NOLINT
 							BGFX_STATE_BLEND_SRC_ALPHA,
 							BGFX_STATE_BLEND_INV_SRC_ALPHA);
 					}
@@ -334,15 +333,15 @@ struct OcornutImguiContext
 					// Project scissor/clipping rectangles into framebuffer
 					// space
 					ImVec4 clipRect;
-					clipRect.x = (cmd->ClipRect.x - clipPos.x) * clipScale.x;
-					clipRect.y = (cmd->ClipRect.y - clipPos.y) * clipScale.y;
-					clipRect.z = (cmd->ClipRect.z - clipPos.x) * clipScale.x;
-					clipRect.w = (cmd->ClipRect.w - clipPos.y) * clipScale.y;
+					clipRect.x = (cmd.ClipRect.x - clipPos.x) * clipScale.x;
+					clipRect.y = (cmd.ClipRect.y - clipPos.y) * clipScale.y;
+					clipRect.z = (cmd.ClipRect.z - clipPos.x) * clipScale.x;
+					clipRect.w = (cmd.ClipRect.w - clipPos.y) * clipScale.y;
 
 					if (clipRect.x
-						< dispWidth
+						< static_cast<float>(dispWidth)
 						&& clipRect.y
-						< dispHeight
+						< static_cast<float>(dispHeight)
 						&& clipRect.z
 						>= 0.0f
 						&& clipRect.w
@@ -352,15 +351,17 @@ struct OcornutImguiContext
 						const uint16_t yy = uint16_t(bx::max(clipRect.y, 0.0f));
 						encoder->setScissor(
 							xx, yy,
-							uint16_t(bx::min(clipRect.z, 65535.0f) - xx),
-							uint16_t(bx::min(clipRect.w, 65535.0f) - yy));
+							uint16_t(bx::min(clipRect.z, 65535.0f)
+									 - static_cast<float>(xx)),
+							uint16_t(bx::min(clipRect.w, 65535.0f)
+									 - static_cast<float>(yy)));
 
 						encoder->setState(state);
 						encoder->setTexture(0, s_tex, th);
-						encoder->setVertexBuffer(0, &tvb, cmd->VtxOffset,
+						encoder->setVertexBuffer(0, &tvb, cmd.VtxOffset,
 												 numVertices);
-						encoder->setIndexBuffer(&tib, cmd->IdxOffset,
-												cmd->ElemCount);
+						encoder->setIndexBuffer(&tib, cmd.IdxOffset,
+												cmd.ElemCount);
 						encoder->submit(m_viewId, program);
 					}
 				}
@@ -370,31 +371,24 @@ struct OcornutImguiContext
 		}
 	}
 
-	void create(float _fontSize, bx::AllocatorI* _allocator)
+	void create()
 	{
 		IMGUI_CHECKVERSION();
 
-		m_allocator = _allocator;
-
-		if (NULL == _allocator)
-		{
-			static bx::DefaultAllocator allocator;
-			m_allocator = &allocator;
-		}
+		static bx::DefaultAllocator allocator;
+		m_allocator = &allocator;
 
 		m_viewId = 255;
 		m_lastScroll = 0;
 		m_last = bx::getHPCounter();
 
-		ImGui::SetAllocatorFunctions(memAlloc, memFree, NULL);
+		ImGui::SetAllocatorFunctions(memAlloc, memFree, nullptr);
 
 		m_imgui = ImGui::CreateContext();
 
 		ImGuiIO& io = ImGui::GetIO();
 
 		io.IniFilename = nullptr;
-
-		setupStyle(true);
 
 		io.BackendFlags |= 0
 						   | ImGuiBackendFlags_RendererHasVtxOffset
@@ -441,7 +435,7 @@ struct OcornutImguiContext
 			{
 				auto tex = bx::bitCast<ImGui::TextureBgfx>(texData->GetTexID());
 				bgfx::destroy(tex.handle);
-				texData->SetTexID(ImTextureID_Invalid);
+				texData->SetTexID(0);
 				texData->SetStatus(ImTextureStatus_Destroyed);
 			}
 		}
@@ -455,24 +449,7 @@ struct OcornutImguiContext
 		bgfx::destroy(m_imageProgram);
 		bgfx::destroy(m_program);
 
-		m_allocator = NULL;
-	}
-
-	void setupStyle(bool _dark)
-	{
-		// Doug Binks' darl color scheme
-		// https://gist.github.com/dougbinks/8089b4bbaccaaf6fa204236978d165a9
-		ImGuiStyle& style = ImGui::GetStyle();
-		if (_dark)
-		{
-			ImGui::StyleColorsDark(&style);
-		}
-		else
-		{
-			ImGui::StyleColorsLight(&style);
-		}
-
-		style.FrameRounding = 4.0f;
+		m_allocator = nullptr;
 	}
 
 	void beginFrame()
@@ -497,42 +474,29 @@ struct OcornutImguiContext
 	bgfx::ProgramHandle m_imageProgram;
 	bgfx::UniformHandle s_tex;
 	bgfx::UniformHandle u_imageLodEnabled;
-	// ImFont* m_font[ImGui::Font::Count];
 	int64_t m_last{};
 	int32_t m_lastScroll{};
-	bgfx::ViewId m_viewId;
+	bgfx::ViewId m_viewId{255};
 };
 
-static OcornutImguiContext s_ctx;
+static OcornutImguiContext s_ctx; // NOLINT
 
-static auto memAlloc(size_t _size, void* _userData) -> void*
+static auto memAlloc(size_t _size, void* _userData) -> void* // NOLINT
 {
 	BX_UNUSED(_userData);
 	return bx::alloc(s_ctx.m_allocator, _size);
 }
 
-static void memFree(void* _ptr, void* _userData)
+static void memFree(void* _ptr, void* _userData) // NOLINT
 {
 	BX_UNUSED(_userData);
 	bx::free(s_ctx.m_allocator, _ptr);
 }
 
-void ImGui_ImplBGFX_Init(float _fontSize, bx::AllocatorI* _allocator)
-{
-	s_ctx.create(_fontSize, _allocator);
-}
+void ImGui_ImplBGFX_Init() { s_ctx.create(); }
 
 void ImGui_ImplBGFX_Shutdown() { s_ctx.destroy(); }
 
 void ImGui_ImplBGFX_NewFrame() { s_ctx.beginFrame(); }
 
 void ImGui_ImplBGFX_EndFrame() { s_ctx.endFrame(); }
-
-namespace ImGui
-{
-// void PushFont(Font::Enum _font, float _fontSizeBaseUnscaled)
-// {
-// 	PushFont(s_ctx.m_font[_font], _fontSizeBaseUnscaled);
-// }
-
-} // namespace ImGui

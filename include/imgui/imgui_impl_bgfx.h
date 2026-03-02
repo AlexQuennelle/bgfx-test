@@ -13,13 +13,15 @@
 #define IMGUI_MBUT_RIGHT 0x02
 #define IMGUI_MBUT_MIDDLE 0x04
 
-inline uint32_t imguiRGBA(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a = 255)
-{
+// NOLINTBEGIN
+inline auto imguiRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255)
+	-> uint32_t
+{ // NOLINTEND
 	return 0
-		   | (uint32_t(_r) << 0)
-		   | (uint32_t(_g) << 8)
-		   | (uint32_t(_b) << 16)
-		   | (uint32_t(_a) << 24);
+		   | (uint32_t(r) << 0)
+		   | (uint32_t(g) << 8)
+		   | (uint32_t(b) << 16)
+		   | (uint32_t(a) << 24);
 }
 
 namespace bx
@@ -27,8 +29,7 @@ namespace bx
 struct AllocatorI;
 }
 
-void ImGui_ImplBGFX_Init(float _fontSize = 18.0f,
-						 bx::AllocatorI* _allocator = NULL);
+void ImGui_ImplBGFX_Init();
 void ImGui_ImplBGFX_Shutdown();
 
 void ImGui_ImplBGFX_NewFrame();
