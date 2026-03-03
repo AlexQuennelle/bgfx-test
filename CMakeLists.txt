@@ -59,13 +59,24 @@ project(
   VERSION 0.0
 )
 
-add_executable("${CMAKE_PROJECT_NAME}")
+# add_executable("${CMAKE_PROJECT_NAME}")
 
 if(LINUX AND CONFIG_USE_UBSAN)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined")
 elseif(LINUX AND CONFIG_USE_ASAN)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
 endif()
+
+add_library(engine-core
+    src/imgui/imgui_impl_bgfx.cpp
+    src/camera.cpp
+    src/mesh.cpp
+    # src/program.cpp
+    src/quaternion.cpp
+    src/shader.cpp
+    src/vectorN.cpp
+    src/window.cpp
+)
 
 # Libraries here
 set(BGFX_BUILD_EXAMPLES OFF)
@@ -82,27 +93,25 @@ if(NOT CONFIG_USE_WAYLAND)
 endif()
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/libraries.cmake")
 
-set(SHADERS_SOURCE ${CMAKE_SOURCE_DIR}/resources/shaders)
-set(SHADERS_BIN ${CMAKE_BINARY_DIR}/shaders)
-if(LINUX)
-endif()
+# set(SHADERS_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/resources/shaders)
+# set(SHADERS_BIN ${CMAKE_BINARY_DIR}/shaders)
 
-if(NOT EMSCRIPTEN)
-    message("Compiling Shaders")
-    bgfx_compile_shaders(
-        TYPE FRAGMENT
-        SHADERS "${SHADERS_SOURCE}/cubes.frag"
-        VARYING_DEF "${SHADERS_SOURCE}/varying.def.sc"
-        OUTPUT_DIR "${SHADERS_BIN}"
-    )
-    bgfx_compile_shaders(
-        TYPE VERTEX
-        SHADERS "${SHADERS_SOURCE}/cubes.vert"
-        VARYING_DEF "${SHADERS_SOURCE}/varying.def.sc"
-        OUTPUT_DIR "${SHADERS_BIN}"
-    )
-    message("Done!")
-endif()
+# if(NOT EMSCRIPTEN)
+#     message("Compiling Shaders")
+#     bgfx_compile_shaders(
+#         TYPE FRAGMENT
+#         SHADERS "${SHADERS_SOURCE}/cubes.frag"
+#         VARYING_DEF "${SHADERS_SOURCE}/varying.def.sc"
+#         OUTPUT_DIR "${SHADERS_BIN}"
+#     )
+#     bgfx_compile_shaders(
+#         TYPE VERTEX
+#         SHADERS "${SHADERS_SOURCE}/cubes.vert"
+#         VARYING_DEF "${SHADERS_SOURCE}/varying.def.sc"
+#         OUTPUT_DIR "${SHADERS_BIN}"
+#     )
+#     message("Done!")
+# endif()
 if(BACKEND STREQUAL "VULKAN")
     set(SHADER_TYPE spirv)
 elseif(BACKEND STREQUAL "OPEN_GL")
@@ -126,11 +135,11 @@ endif()
 #     MY_SOURCES CONFIGURE_DEPENDS
 #      "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 # )
-file(GLOB_RECURSE SHADERS
-    CONFIGURE_DEPENDS
-    "${SHADERS_SOURCE}/*.frag"
-    "${SHADERS_SOURCE}/*.vert"
-)
+# file(GLOB_RECURSE SHADERS
+#     CONFIGURE_DEPENDS
+#     "${SHADERS_SOURCE}/*.frag"
+#     "${SHADERS_SOURCE}/*.vert"
+# )
 
 if(EMSCRIPTEN)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}\
@@ -147,75 +156,75 @@ if(EMSCRIPTEN)
  --exclude-file ../resources/shaders/ -sALLOW_MEMORY_GROWTH"
   )
 endif()
-target_compile_definitions(
-  ${CMAKE_PROJECT_NAME} PUBLIC $<$<CONFIG:Release>:PRODUCTION_BUILD>
-                               NAME="${CMAKE_PROJECT_NAME}"
-)
+# target_compile_definitions(
+#   ${CMAKE_PROJECT_NAME} PUBLIC $<$<CONFIG:Release>:PRODUCTION_BUILD>
+#                                NAME="${CMAKE_PROJECT_NAME}"
+# )
 target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC BACKEND="${BACKEND}")
 
-set_target_properties(
-  "${CMAKE_PROJECT_NAME}"
-  PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/bin"
-             RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/bin/\
-${CMAKE_PROJECT_NAME}_${CMAKE_PROJECT_VERSION}"
-)
-if(EMSCRIPTEN)
-    set_target_properties(
-    ${CMAKE_PROJECT_NAME}
-    PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE
-               "${CMAKE_CURRENT_SOURCE_DIR}/bin/\
-${CMAKE_PROJECT_NAME}_${CMAKE_PROJECT_VERSION}_web"
-  )
-endif()
+# set_target_properties(
+#   "${CMAKE_PROJECT_NAME}"
+#   PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/bin"
+#              RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/bin/\
+# ${CMAKE_PROJECT_NAME}_${CMAKE_PROJECT_VERSION}"
+# )
+# if(EMSCRIPTEN)
+#     set_target_properties(
+#     ${CMAKE_PROJECT_NAME}
+#     PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE
+#                "${CMAKE_CURRENT_SOURCE_DIR}/bin/\
+# ${CMAKE_PROJECT_NAME}_${CMAKE_PROJECT_VERSION}_web"
+#   )
+# endif()
 
-set(RELEASE_RESOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bin/\
+set(RELEASE_RESOURCE_DIR "${CMAKE_SOURCE_DIR}/bin/\
 ${CMAKE_PROJECT_NAME}_${CMAKE_PROJECT_VERSION}/resources/"
 )
 set(DEBUG_RESOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/resources/")
+# target_compile_definitions(
+#     engine-core
+#     PUBLIC
+#     RESOURCES_PATH=$<IF:$<CONFIG:Release>,"./resources/","${DEBUG_RESOURCE_DIR}">
+# )
 target_compile_definitions(
-  ${CMAKE_PROJECT_NAME}
-  PUBLIC
-    RESOURCES_PATH=$<IF:$<CONFIG:Release>,"./resources/","${DEBUG_RESOURCE_DIR}">
-)
-target_compile_definitions(
-    ${CMAKE_PROJECT_NAME}
+    engine-core
     PUBLIC
     SHADERS=$<IF:$<CONFIG:Release>,"./resources/shaders/${SHADER_TYPE}","${SHADERS_BIN}/${SHADER_TYPE}/">
 )
 
-target_compile_features("${CMAKE_PROJECT_NAME}" PRIVATE cxx_std_23)
+target_compile_features(engine-core PRIVATE cxx_std_23)
 
 # target_include_directories(
 #     "${CMAKE_PROJECT_NAME}" PRIVATE
 #     ${CMAKE_BINARY_DIR}/shaders
 # )
 # target_sources("${CMAKE_PROJECT_NAME}" PRIVATE ${MY_SOURCES})
-target_sources("${CMAKE_PROJECT_NAME}"
-    PRIVATE
-    src/imgui/imgui_impl_bgfx.cpp
-    src/camera.cpp
-    src/mesh.cpp
-    # src/program.cpp
-    src/quaternion.cpp
-    src/shader.cpp
-    src/vectorN.cpp
-    src/window.cpp
-    # src/main.cpp
-)
+# target_sources("${CMAKE_PROJECT_NAME}"
+#     PRIVATE
+#     src/imgui/imgui_impl_bgfx.cpp
+#     src/camera.cpp
+#     src/mesh.cpp
+#     # src/program.cpp
+#     src/quaternion.cpp
+#     src/shader.cpp
+#     src/vectorN.cpp
+#     src/window.cpp
+#     # src/main.cpp
+# )
 if(NOT EMSCRIPTEN)
     target_sources("${CMAKE_PROJECT_NAME}" PRIVATE ${SHADERS})
 endif()
 
 target_include_directories(
-  "${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+    engine-core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/"
 )
 target_include_directories(
-  "${CMAKE_PROJECT_NAME}" PUBLIC "${PROJECT_BINARY_DIR}"
+  engine-core PUBLIC "${PROJECT_BINARY_DIR}"
 )
 
 if(NOT EMSCRIPTEN)
     add_custom_command(
-    TARGET ${CMAKE_PROJECT_NAME}
+    TARGET engine-core
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} # -E copy_directory
 -DDEST_DIR=$<IF:$<CONFIG:Release>,"${RELEASE_RESOURCE_DIR}","${DEBUG_RESOURCE_DIR}">

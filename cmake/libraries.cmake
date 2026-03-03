@@ -15,20 +15,20 @@ if(NOT EMSCRIPTEN)
         FetchContent_MakeAvailable(glfw)
         FetchContent_GetProperties(glfw SOURCE_DIR GLFW_DIR)
         # target_include_directories(
-        # ${CMAKE_PROJECT_NAME}
+        # engine-core
         # SYSTEM PRIVATE "${glfw_SOURCE_DIR}/include/GLFW/"
         # )
     endif()
-    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE glfw)
+    target_link_libraries(engine-core PRIVATE glfw)
 else()
     message("Using port")
     target_link_options(
-        ${CMAKE_PROJECT_NAME}
+        engine-core
         PRIVATE
         "--use-port=contrib.glfw3"
     )
     target_compile_options(
-        ${CMAKE_PROJECT_NAME}
+        engine-core
         PRIVATE
         "--use-port=contrib.glfw3"
     )
@@ -40,18 +40,18 @@ set(BGFX_BUILD_EXAMPLES OFF)
 FetchContent_Declare(
     bgfx
     GIT_REPOSITORY https://github.com/bkaradzic/bgfx.cmake.git
-    GIT_TAG v1.136.9135-512
+    GIT_TAG v1.140.9174-515
     GIT_SHALLOW ON
     GIT_PROGRESS ON
 )
 FetchContent_MakeAvailable(bgfx)
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE bgfx)
+target_link_libraries(engine-core PUBLIC bgfx)
 # target_include_directories(
-#     "${CMAKE_PROJECT_NAME}" PUBLIC
+#     "engine-core" PUBLIC
 #     "${CMAKE_BINARY_DIR}/_deps/bgfx-src/bgfx/"
 # )
 target_include_directories(
-    "${CMAKE_PROJECT_NAME}" SYSTEM PRIVATE
+    engine-core SYSTEM PUBLIC
     "${CMAKE_BINARY_DIR}/_deps/bgfx-src/bx/include/"
     "${CMAKE_BINARY_DIR}/_deps/bgfx-src/bimg/include/"
 )
@@ -66,9 +66,9 @@ FetchContent_Declare(
     GIT_PROGRESS ON
 )
 FetchContent_MakeAvailable(assimp)
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE assimp)
+target_link_libraries(engine-core PRIVATE assimp)
 target_include_directories(
-    "${CMAKE_PROJECT_NAME}" SYSTEM PRIVATE
+    "engine-core" SYSTEM PUBLIC
     "${CMAKE_BINARY_DIR}/_deps/assimp-src/include/"
 )
 message("Done!")
@@ -99,11 +99,10 @@ add_library(imgui STATIC
         # ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
         # ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.h
 )
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE imgui)
+target_link_libraries(engine-core PUBLIC imgui)
 target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR})
 target_include_directories(
         imgui
         PUBLIC "${glfw_SOURCE_DIR}/include/"
 )
-message(${imgui_SOURCE_DIR})
 message("Done!")
