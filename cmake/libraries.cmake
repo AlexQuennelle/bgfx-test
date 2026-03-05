@@ -19,7 +19,7 @@ if(NOT EMSCRIPTEN)
         # SYSTEM PRIVATE "${glfw_SOURCE_DIR}/include/GLFW/"
         # )
     endif()
-    target_link_libraries(engine-core PRIVATE glfw)
+    target_link_libraries(engine-core PUBLIC glfw)
 else()
     message("Using port")
     target_link_options(
@@ -66,7 +66,7 @@ FetchContent_Declare(
     GIT_PROGRESS ON
 )
 FetchContent_MakeAvailable(assimp)
-target_link_libraries(engine-core PRIVATE assimp)
+target_link_libraries(engine-core PUBLIC assimp)
 target_include_directories(
     "engine-core" SYSTEM PUBLIC
     "${CMAKE_BINARY_DIR}/_deps/assimp-src/include/"

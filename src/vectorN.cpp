@@ -49,10 +49,21 @@ auto Vector3::operator-() const -> Vector3
 {
 	return {.x = -this->x, .y = -this->y, .z = -this->z};
 }
+auto Vector3::operator*(const float value) const -> Vector3
+{
+	return {.x = this->x * value, .y = this->y * value, .z = this->z * value};
+}
+auto Vector3::operator/(const float value) const -> Vector3
+{
+	return {.x = this->x / value, .y = this->y / value, .z = this->z / value};
+}
 
 Vector3::operator Normal3() { return std::bit_cast<Normal3>(*this); }
 
 /******************************** Normal3 *************************************/
+
+Normal3::Normal3(const float x, const float y, const float z) :
+	x(x), y(y), z(z) { };
 
 auto Normal3::GetX() const -> float { return this->x; }
 auto Normal3::GetY() const -> float { return this->y; }
@@ -88,4 +99,12 @@ auto Normal3::operator+() const -> Normal3 { return {*this}; }
 auto Normal3::operator-() const -> Normal3
 {
 	return {-this->x, -this->y, -this->z};
+}
+auto Normal3::operator*(const float value) const -> Vector3
+{
+	return {.x = this->x * value, .y = this->y * value, .z = this->z * value};
+}
+auto Normal3::operator/(const float value) const -> Vector3
+{
+	return {.x = this->x / value, .y = this->y / value, .z = this->z / value};
 }

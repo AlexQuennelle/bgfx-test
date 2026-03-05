@@ -74,15 +74,20 @@ struct Vector3
 	}
 	auto operator+() const -> Vector3;
 	auto operator-() const -> Vector3;
-	auto operator*(const float value) const -> Vector3
+	auto operator*(const float value) const -> Vector3;
+	auto operator/(const float value) const -> Vector3;
+
+	static constexpr auto Forward() -> Vector3
 	{
-		return {
-			.x = this->x * value, .y = this->y * value, .z = this->z * value};
+		return {.x = 0.0f, .y = 0.0f, .z = 1.0f};
 	}
-	auto operator/(const float value) const -> Vector3
+	static constexpr auto Right() -> Vector3
 	{
-		return {
-			.x = this->x / value, .y = this->y / value, .z = this->z / value};
+		return {.x = 1.0f, .y = 0.0f, .z = 0.0f};
+	}
+	static constexpr auto Up() -> Vector3
+	{
+		return {.x = 0.0f, .y = 1.0f, .z = 0.0f};
 	}
 
 	private:
@@ -143,16 +148,8 @@ class Normal3
 	}
 	auto operator+() const -> Normal3;
 	auto operator-() const -> Normal3;
-	auto operator*(const float value) const -> Vector3
-	{
-		return {
-			.x = this->x * value, .y = this->y * value, .z = this->z * value};
-	}
-	auto operator/(const float value) const -> Vector3
-	{
-		return {
-			.x = this->x / value, .y = this->y / value, .z = this->z / value};
-	}
+	auto operator*(const float value) const -> Vector3;
+	auto operator/(const float value) const -> Vector3;
 
 	auto operator=(const Normal3&) -> Normal3& = default;
 	auto operator=(Normal3&&) -> Normal3& = default;
@@ -163,7 +160,7 @@ class Normal3
 
 	private:
 	Normal3() = default;
-	Normal3(const float x, const float y, const float z) : x(x), y(y), z(z) { };
+	Normal3(const float x, const float y, const float z);
 
 	friend auto Vector3::Normalize() const -> Normal3;
 
@@ -179,6 +176,6 @@ struct Vector2
 };
 class Normal2
 {
-	float x{};
-	float y{};
+	float x{}; // NOLINT
+	float y{}; // NOLINT
 };

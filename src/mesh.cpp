@@ -1,6 +1,5 @@
 #include "mesh.h"
 #include "matrix.h"
-#include "shader.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -10,7 +9,7 @@
 #include <ranges>
 #include <vector>
 
-bgfx::VertexLayout Vertex::layout;
+bgfx::VertexLayout Vertex::layout; // NOLINT
 
 void ProcessNode(const aiNode* node, const aiScene* scene,
 				 std::vector<std::pair<Mesh, Matrix<4>>>& vector,
@@ -31,7 +30,8 @@ auto LoadModel(const std::string& filepath)
 										  | aiProcess_OptimizeGraph);
 	if (scene == nullptr)
 	{
-		std::println("Error: Failed to load {}", filepath);
+		std::println("Error: Failed to load {}, {}", filepath,
+					 importer.GetErrorString());
 		return {};
 	}
 
@@ -56,7 +56,8 @@ void ProcessNode(const aiNode* node, const aiScene* scene, // NOLINT
 	std::array<float, 16> newTransformData{};
 	std::memcpy(newTransformData.data(), &node->mTransformation,
 				sizeof(float) * 16);
-	auto transforms = rv::repeat(transform * Matrix<4>(newTransformData));
+	auto transforms
+		= rv::repeat(transform * Matrix<4>(newTransformData).Transpose());
 
 	auto meshes
 		= std::span(node->mMeshes, node->mNumMeshes) // NOLINTNEXTLINE
@@ -79,88 +80,6 @@ void ProcessNode(const aiNode* node, const aiScene* scene, // NOLINT
 	}
 }
 
-Mesh::Mesh(const std::array<Vertex, 4>& data,
-		   const std::array<uint16_t, 6>& indices)
-{
-	this->vertexBuffer = bgfx::createVertexBuffer(
-		bgfx::makeRef(data.data(), sizeof(data)), Vertex::layout);
-	this->indexBuffer = bgfx::createIndexBuffer(
-		bgfx::makeRef(indices.data(), sizeof(indices)));
-	this->shader = CreateShaderProgram(SHADERS "cubes.vert.bin",
-									   SHADERS "cubes.frag.bin");
-}
-Mesh::Mesh(const std::array<Vertex, 8>& data,
-		   const std::array<uint16_t, 36>& indices)
-{
-	this->vertexBuffer = bgfx::createVertexBuffer(
-		bgfx::makeRef(data.data(), sizeof(data)), Vertex::layout);
-	this->indexBuffer = bgfx::createIndexBuffer(
-		bgfx::makeRef(indices.data(), sizeof(indices)));
-	this->shader = CreateShaderProgram(SHADERS "cubes.vert.bin",
-									   SHADERS "cubes.frag.bin");
-}
-// Mesh::Mesh(const std::string& filepath)
-// {
-// 	Assimp::Importer importer;
-// 	const aiScene* scene
-// 		= importer.ReadFile(filepath, 0x0
-// 										  | aiProcess_JoinIdenticalVertices
-// 										  | aiProcess_Triangulate
-// 										  | aiProcess_SortByPType
-// 										  | aiProcess_FixInfacingNormals
-// 										  | aiProcess_OptimizeMeshes
-// 										  | aiProcess_OptimizeGraph);
-// 	// TODO: Add support for multi-mesh objects
-// 	auto* mesh = scene->mMeshes[0]; // NOLINT
-
-// 	// TODO: Add check to ensure colours are present
-// 	namespace rv = std::ranges::views;
-// 	std::vector<Vertex> vertexData;
-// 	auto test = rv::zip(std::span(mesh->mVertices, mesh->mNumVertices),
-// 						std::span(mesh->mColors[0], mesh->mNumVertices));
-// 	vertexData.reserve(mesh->mNumVertices);
-// 	for (auto [position, color] : test)
-// 	{
-// 		vertexData.push_back({
-// 			{.x = position.x, .y = position.y, .z = position.z},
-// 			{
-// 				.r = static_cast<uint8_t>(std::round(color.r * 255)),
-// 				.g = static_cast<uint8_t>(std::round(color.g * 255)),
-// 				.b = static_cast<uint8_t>(std::round(color.b * 255)),
-// 				.a = static_cast<uint8_t>(std::round(color.a * 255)),
-// 			},
-// 		});
-// 	}
-
-// 	std::vector<uint16_t> indices;
-// 	for (uint32_t i{0}; i < mesh->mNumFaces; i++)
-// 	{
-// 		auto face{mesh->mFaces[i]};
-// 		for (int j{0}; j < face.mNumIndices; j++)
-// 		{
-// 			indices.push_back(static_cast<uint16_t>(face.mIndices[j]));
-// 		}
-// 	}
-
-// 	this->vertexBuffer = bgfx::createVertexBuffer(
-// 		bgfx::copy(vertexData.data(),
-// 				   static_cast<uint32_t>(vertexData.size() * sizeof(Vertex))),
-// 		Vertex::layout);
-// 	this->indexBuffer = bgfx::createIndexBuffer(
-// 		bgfx::copy(indices.data(),
-// 				   static_cast<uint32_t>(indices.size() * sizeof(uint16_t))));
-// 	this->shader = CreateShaderProgram(SHADERS "cubes.vert.bin",
-// 									   SHADERS "cubes.frag.bin");
-// }
-Mesh::Mesh(Mesh&& other) noexcept :
-	vertexBuffer(other.vertexBuffer),
-	indexBuffer(other.indexBuffer),
-	shader(other.shader)
-{
-	other.shader = BGFX_INVALID_HANDLE;
-	other.vertexBuffer = BGFX_INVALID_HANDLE;
-	other.indexBuffer = BGFX_INVALID_HANDLE;
-};
 Mesh::Mesh(const aiMesh* aiMesh, const aiScene* scene) // NOLINT
 {
 	namespace r = std::ranges;
@@ -199,7 +118,7 @@ Mesh::Mesh(const aiMesh* aiMesh, const aiScene* scene) // NOLINT
 	auto vertData = rv::zip(std::span(aiMesh->mVertices, aiMesh->mNumVertices),
 							std::span(aiMesh->mNormals, aiMesh->mNumVertices),
 							colors, texCoords);
-	for (auto [pos, nor, col, uv] : vertData)
+	for (auto [pos, nor, col, uv] : vertData) // NOLINT
 	{
 		this->vertices.push_back({
 			.pos = {.x = pos.x, .y = pos.y, .z = pos.z},
@@ -227,7 +146,17 @@ Mesh::Mesh(const aiMesh* aiMesh, const aiScene* scene) // NOLINT
 			this->tris.data(),
 			static_cast<uint32_t>(aiMesh->mNumFaces * sizeof(Vertex))));
 	}
+	std::println("Vertices: {}", this->vertices.size());
 }
+Mesh::Mesh(Mesh&& other) noexcept :
+	vertices(std::move(other.vertices)),
+	tris(std::move(other.tris)),
+	vertexBuffer(other.vertexBuffer),
+	indexBuffer(other.indexBuffer)
+{
+	other.vertexBuffer = BGFX_INVALID_HANDLE;
+	other.indexBuffer = BGFX_INVALID_HANDLE;
+};
 Mesh::~Mesh() { this->Destroy(); }
 
 void Mesh::Draw(bgfx::ProgramHandle& shader) const
@@ -241,11 +170,11 @@ auto Mesh::operator=(Mesh&& other) noexcept -> Mesh&
 {
 	this->Destroy();
 
-	this->shader = other.shader;
+	this->vertices = other.vertices;
+	this->tris = other.tris;
 	this->vertexBuffer = other.vertexBuffer;
 	this->indexBuffer = other.indexBuffer;
 
-	other.shader = BGFX_INVALID_HANDLE;
 	other.vertexBuffer = BGFX_INVALID_HANDLE;
 	other.indexBuffer = BGFX_INVALID_HANDLE;
 
@@ -254,8 +183,6 @@ auto Mesh::operator=(Mesh&& other) noexcept -> Mesh&
 
 void Mesh::Destroy()
 {
-	if (bgfx::isValid(this->shader))
-		bgfx::destroy(this->shader);
 	if (bgfx::isValid(this->vertexBuffer))
 		bgfx::destroy(this->vertexBuffer);
 	if (bgfx::isValid(this->indexBuffer))

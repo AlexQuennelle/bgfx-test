@@ -557,7 +557,7 @@ template <> class Matrix<4>
 			for (uint64_t x{0}; x < W2; x++)
 			{
 				mat[x, y] = 0;
-				for (int i{0}; i < 4; i++)
+				for (uint64_t i{0}; i < 4; i++)
 				{
 					mat[x, y] += (*this)[i, y] * other[x, i];
 				}

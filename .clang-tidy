@@ -38,8 +38,8 @@ FormatStyle:     file
 
 CheckOptions:
   - key: readability-identifier-length.IgnoredVariableNames
-    value: 'x|y|z|i|j|t|a|b|c'
+    value: 'x|y|z|w|i|j|t|a|b|c'
   - key: readability-identifier-length.IgnoredParameterNames
-    value: 'x|y|z|i|j|a|b|c'
+    value: 'x|y|z|w|i|j|a|b|c'
   - key: readability-identifier-length.MinimumLoopCounterNameLength
     value: '1'
